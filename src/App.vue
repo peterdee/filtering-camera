@@ -5,6 +5,8 @@ import {
   ref,
 } from 'vue';
 
+import grayscale from './processing-canvas/grayscale';
+
 interface ComponentState {
   ctx: CanvasRenderingContext2D | null;
 }
@@ -22,7 +24,15 @@ const draw = (video: HTMLVideoElement): null | void => {
   }
 
   ctx.drawImage(video, 0, 0);
-  setTimeout(draw, 10, video);
+
+  const imageData = grayscale(
+    ctx.getImageData(0, 0, 400, 400),
+    'luminosity',
+  );
+
+  ctx.putImageData(imageData, 0, 0);
+
+  setTimeout(draw, 50, video);
 }
 
 const handleError = (error: MediaStreamError): void => {
