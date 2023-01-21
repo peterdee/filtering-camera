@@ -8,6 +8,7 @@ import {
 import binary from './processing-canvas/binary';
 import eightColors from './processing-canvas/eight-colors';
 import grayscale from './processing-canvas/grayscale';
+import solarize from './processing-canvas/solarize';
 
 interface ComponentState {
   ctx: CanvasRenderingContext2D | null;
@@ -35,7 +36,11 @@ const draw = (video: HTMLVideoElement): null | void => {
   //   ctx.getImageData(0, 0, 400, 400),
   //   105,
   // );
-  const imageData = eightColors(ctx.getImageData(0, 0, 400, 400));
+  // const imageData = eightColors(ctx.getImageData(0, 0, 400, 400));
+  const imageData = solarize(
+    ctx.getImageData(0, 0, 400, 400),
+    105,
+  );
 
   ctx.putImageData(imageData, 0, 0);
 
