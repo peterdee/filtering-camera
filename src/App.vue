@@ -5,6 +5,8 @@ import {
   ref,
 } from 'vue';
 
+import binary from './processing-canvas/binary';
+import eightColors from './processing-canvas/eight-colors';
 import grayscale from './processing-canvas/grayscale';
 
 interface ComponentState {
@@ -25,14 +27,19 @@ const draw = (video: HTMLVideoElement): null | void => {
 
   ctx.drawImage(video, 0, 0);
 
-  const imageData = grayscale(
-    ctx.getImageData(0, 0, 400, 400),
-    'luminosity',
-  );
+  // const imageData = grayscale(
+  //   ctx.getImageData(0, 0, 400, 400),
+  //   'luminosity',
+  // );
+  // const imageData = binary(
+  //   ctx.getImageData(0, 0, 400, 400),
+  //   105,
+  // );
+  const imageData = eightColors(ctx.getImageData(0, 0, 400, 400));
 
   ctx.putImageData(imageData, 0, 0);
 
-  setTimeout(draw, 50, video);
+  setTimeout(draw, 10, video);
 }
 
 const handleError = (error: MediaStreamError): void => {
