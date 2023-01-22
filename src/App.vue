@@ -8,6 +8,7 @@ import {
 import binary from './processing-canvas/binary';
 import eightColors from './processing-canvas/eight-colors';
 import grayscale from './processing-canvas/grayscale';
+import sobel from './processing-canvas/sobel';
 import solarize from './processing-canvas/solarize';
 
 interface ComponentState {
@@ -37,10 +38,11 @@ const draw = (video: HTMLVideoElement): null | void => {
   //   105,
   // );
   // const imageData = eightColors(ctx.getImageData(0, 0, 400, 400));
-  const imageData = solarize(
-    ctx.getImageData(0, 0, 400, 400),
-    105,
-  );
+  // const imageData = solarize(
+  //   ctx.getImageData(0, 0, 400, 400),
+  //   105,
+  // );
+  const imageData = sobel(ctx.getImageData(0, 0, 400, 400));
 
   ctx.putImageData(imageData, 0, 0);
 
