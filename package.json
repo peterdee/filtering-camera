@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "build": "vue-tsc && vite build",
-    "dev": "vite",
+    "dev": "vite --host",
     "preserve": "npm run build",
     "preview": "vite preview",
-    "serve": "node ./serve.js"
+    "serve": "node ./serve/index.js"
   },
   "dependencies": {
     "common-styles": "github:julyskies/common-styles",

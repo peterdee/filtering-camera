@@ -8,6 +8,7 @@ import {
 import { FILTER_TYPES, type FilterType } from './constants';
 import filters from './processing-canvas';
 import type { GrayscaleType } from './types/processing';
+import isMobile from './utilities/is-mobile';
 
 interface ComponentState {
   ctx: CanvasRenderingContext2D | null;
@@ -95,29 +96,39 @@ onMounted((): void => {
   }
 
   // TODO: better image ratios for mobile devices
-  // TODO: navigator.mediaDevices.getUserMedia().then().catch()
-  navigator.getUserMedia(
-    {
-      audio: false,
-      video: {
-        // facingMode: {
-        //   exact: 'environment',
-        // },
-        height: {
-          ideal: 720,
-          max: 720,
-          min: 600,
-        },
-        width: {
-          ideal: 1280,
-          max: 1280,
-          min: 800,
-        },
+
+  const constraints: MediaStreamConstraints = {
+    audio: false,
+    video: {
+      height: {
+        ideal: 720,
+        max: 720,
+        min: 600,
+      },
+      width: {
+        ideal: 1280,
+        max: 1280,
+        min: 800,
       },
     },
-    handleSuccess,
-    handleError,
-  );
+  };
+  if (true) {
+    (constraints.video as MediaTrackConstraints).facingMode = { exact: 'environment' };
+    (constraints.video as MediaTrackConstraints).height = {
+      ideal: height,
+      max: height,
+      min: height,
+    };
+    (constraints.video as MediaTrackConstraints).width = {
+      ideal: width,
+      max: width,
+      min: width,
+    };
+  }
+
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(handleSuccess)
+    .catch(handleError);
 });
 </script>
 
