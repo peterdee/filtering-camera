@@ -1,8 +1,13 @@
 {
   "name": "filtering-camera",
+  "description": "Processing camera stream",
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "author": {
+    "name": "Peter Dyumin",
+    "url": "https://github.com/peterdee"
+  },
   "scripts": {
     "build": "vue-tsc && vite build",
     "dev": "vite --host",
@@ -10,6 +15,15 @@
     "preview": "vite preview",
     "serve": "node ./serve/index.js"
   },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peterdee/filtering-camera"
+  },
+  "license": "MIT",
   "dependencies": {
     "common-styles": "github:julyskies/common-styles",
     "cors": "^2.8.5",

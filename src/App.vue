@@ -57,12 +57,14 @@ const draw = (video: HTMLVideoElement): null | void => {
 }
 
 const handleError = (error: MediaStreamError): void => {
-  console.log(error);
+  console.log('media device error', error);
 }
 
 const handleSuccess = (stream: MediaStream): null | void => {
   const video = document.createElement('video');
-  video.onplay = (): null | void => draw(video)
+  video.onplay = (): null | void => draw(video);
+  video.muted = true;
+  video.playsInline = true;
   video.srcObject = stream;
   video.play();
 }
@@ -112,7 +114,7 @@ onMounted((): void => {
       },
     },
   };
-  if (true) {
+  if (isMobile()) {
     (constraints.video as MediaTrackConstraints).facingMode = { exact: 'environment' };
     (constraints.video as MediaTrackConstraints).height = {
       ideal: height,
