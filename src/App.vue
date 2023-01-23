@@ -34,15 +34,15 @@ const draw = (video: HTMLVideoElement): null | void => {
   //   'luminosity',
   // );
   // const imageData = binary(
-  //   ctx.getImageData(0, 0, 400, 400),
+  //   ctx.getImageData(0, 0, 600, 475),
   //   105,
   // );
-  // const imageData = eightColors(ctx.getImageData(0, 0, 400, 400));
+  // const imageData = eightColors(ctx.getImageData(0, 0, 600, 475));
   // const imageData = solarize(
-  //   ctx.getImageData(0, 0, 400, 400),
-  //   105,
+  //   ctx.getImageData(0, 0, 600, 475),
+  //   55,
   // );
-  const imageData = sobel(ctx.getImageData(0, 0, 400, 400));
+  const imageData = sobel(ctx.getImageData(0, 0, 600, 475));
 
   ctx.putImageData(imageData, 0, 0);
 
@@ -64,7 +64,7 @@ onMounted((): void => {
   if (canvasRef.value) {
     canvasRef.value.height = window.innerHeight;
     canvasRef.value.width = window.innerWidth;
-    state.ctx = canvasRef.value.getContext('2d');
+    state.ctx = canvasRef.value.getContext('2d', { willReadFrequently: true });
   }
 
   navigator.getUserMedia(
