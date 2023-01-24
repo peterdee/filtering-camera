@@ -15,6 +15,7 @@ interface ComponentState {
   selectedFilter: FilterType;
   selectedGrayscaleType: GrayscaleType;
   selectedThreshold: number;
+  wasmLoaded: boolean;
 }
 
 const state = reactive<ComponentState>({
@@ -22,6 +23,7 @@ const state = reactive<ComponentState>({
   selectedFilter: FILTER_TYPES[0],
   selectedGrayscaleType: 'luminosity',
   selectedThreshold: FILTER_TYPES[0].defaultThreshold || 0,
+  wasmLoaded: false,
 })
 
 const canvasRef = ref<HTMLCanvasElement>();
@@ -87,7 +89,20 @@ const handleThresholdInput = (event: Event): void => {
   state.selectedThreshold = Number(value);
 }
 
-onMounted((): void => {
+onMounted(async (): Promise<void> => {
+  // load WASM
+  const go = new (window as any).Go();
+  try {
+    const waInstance = await WebAssembly.instantiateStreaming(
+      fetch('bin.wasm'),
+      go.importObject,
+    );
+    go.run(waInstance.instance);
+    state.wasmLoaded = true;
+  } catch {
+    state.wasmLoaded = false;
+  }
+
   const height = window.innerHeight;
   const width = window.innerWidth;
 

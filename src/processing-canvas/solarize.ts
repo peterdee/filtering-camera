@@ -7,19 +7,20 @@ export default function solarize(
   threshold: number,
 ): ImageData {
   const { data } = imageData;
-  const newImageData = new ImageData(imageData.width, imageData.height);
+  const processed = new Uint8ClampedArray(data.length);
   const adjustedThreshold = clamp(threshold, 0, 255);
   for (let i = 0; i < data.length; i += 4) {
-    newImageData.data[i] = data[i] <= adjustedThreshold
+    processed[i] = data[i] <= adjustedThreshold
       ? 255 - data[i]
       : data[i];
-    newImageData.data[i + 1] = data[i + 1] <= adjustedThreshold
+    processed[i + 1] = data[i + 1] <= adjustedThreshold
       ? 255 - data[i + 1]
       : data[i + 1];
-    newImageData.data[i + 2] = data[i + 2] <= adjustedThreshold
+    processed[i + 2] = data[i + 2] <= adjustedThreshold
       ? 255 - data[i + 2]
       : data[i + 2];
-    newImageData.data[i + 3] = data[i + 3];
+    processed[i + 3] = data[i + 3];
   }
-  return newImageData;
+  imageData.data.set(processed);
+  return imageData;
 }

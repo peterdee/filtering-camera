@@ -19,7 +19,7 @@ const COLORS: Color[] = [
 
 export default function eightColors(imageData: ImageData): ImageData {
   const { data } = imageData;
-  const newImageData = new ImageData(imageData.width, imageData.height);
+  const processed = new Uint8ClampedArray(data.length);
   for (let i = 0; i < data.length; i += 4) {
     let minDelta = 195076;
     let selectedColor: Color = COLORS[0];
@@ -34,10 +34,11 @@ export default function eightColors(imageData: ImageData): ImageData {
         selectedColor = indexColor;
       }
     }
-    newImageData.data[i] = selectedColor.r;
-    newImageData.data[i + 1] = selectedColor.g;
-    newImageData.data[i + 2] = selectedColor.b;
-    newImageData.data[i + 3] = data[i + 3];
+    processed[i] = selectedColor.r;
+    processed[i + 1] = selectedColor.g;
+    processed[i + 2] = selectedColor.b;
+    processed[i + 3] = data[i + 3];
   }
-  return newImageData;
+  imageData.data.set(processed);
+  return imageData;
 }
