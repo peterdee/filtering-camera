@@ -6,12 +6,14 @@ import {
 } from 'vue';
 
 import { FILTER_TYPES, type FilterType } from './constants';
-import filters from './processing-canvas';
-import type { GrayscaleType } from './types/processing';
+import bridge from './bridge';
+import canvasFilters from './processing-canvas';
+import type { GrayscaleType, ProcessingType } from './types/processing';
 import isMobile from './utilities/is-mobile';
 
 interface ComponentState {
   ctx: CanvasRenderingContext2D | null;
+  processingType: ProcessingType;
   selectedFilter: FilterType;
   selectedGrayscaleType: GrayscaleType;
   selectedThreshold: number;
@@ -20,6 +22,7 @@ interface ComponentState {
 
 const state = reactive<ComponentState>({
   ctx: null,
+  processingType: 'canvas',
   selectedFilter: FILTER_TYPES[0],
   selectedGrayscaleType: 'luminosity',
   selectedThreshold: FILTER_TYPES[0].defaultThreshold || 0,
@@ -38,19 +41,27 @@ const draw = (video: HTMLVideoElement): null | void => {
 
   const imageData = ((): ImageData => {
     const frame = ctx.getImageData(0, 0,  window.innerWidth, window.innerHeight);
-    if (state.selectedFilter.value === 'binary') {
-      return filters.binary(frame, state.selectedThreshold);
+    if (state.processingType === 'canvas') {
+      if (state.selectedFilter.value === 'binary') {
+        return canvasFilters.binary(frame, state.selectedThreshold);
+      }
+      if (state.selectedFilter.value === 'eightColors') {
+        return canvasFilters.eightColors(frame);
+      }
+      if (state.selectedFilter.value === 'grayscale') {
+        return canvasFilters.grayscale(frame, state.selectedGrayscaleType);
+      }
+      if (state.selectedFilter.value === 'sobel') {
+        return canvasFilters.sobel(frame);
+      }
+      return canvasFilters.solarize(frame, state.selectedThreshold);
     }
-    if (state.selectedFilter.value === 'eightColors') {
-      return filters.eightColors(frame);
-    }
-    if (state.selectedFilter.value === 'grayscale') {
-      return filters.grayscale(frame, state.selectedGrayscaleType);
-    }
-    if (state.selectedFilter.value === 'sobel') {
-      return filters.sobel(frame);
-    }
-    return filters.solarize(frame, state.selectedThreshold);
+    return bridge(
+      frame,
+      state.selectedFilter.value,
+      state.selectedThreshold,
+      state.selectedGrayscaleType,
+    );
   })();
 
   ctx.putImageData(imageData, 0, 0);
@@ -82,6 +93,11 @@ const handleFilterSelection = (event: Event): void => {
 const handleGrayscaleTypeSelection = (event: Event): void => {
   const { value } = event.target as HTMLSelectElement;
   state.selectedGrayscaleType = value as GrayscaleType;
+}
+
+const handleProcessingTypeSelection = (event: Event): void => {
+  const { value } = event.target as HTMLSelectElement;
+  state.processingType = value as ProcessingType;
 }
 
 const handleThresholdInput = (event: Event): void => {
@@ -154,6 +170,18 @@ onMounted(async (): Promise<void> => {
     <canvas ref="canvasRef" />
     <div class="f d-col controls">
       <select
+        :value="state.processingType"
+        @change="handleProcessingTypeSelection"
+      >
+        <option value="canvas">
+          Canvas
+        </option>
+        <option value="wasm">
+          WASM
+        </option>
+      </select>
+      <select
+        class="mt-1"
         :value="state.selectedFilter.value"
         @change="handleFilterSelection"
       >
@@ -166,6 +194,7 @@ onMounted(async (): Promise<void> => {
       </select>
       <select
         v-if="state.selectedFilter.isGrayscale"
+        class="mt-1"
         :value="state.selectedGrayscaleType"
         @change="handleGrayscaleTypeSelection"
       >
@@ -178,7 +207,7 @@ onMounted(async (): Promise<void> => {
       </select>
       <div
         v-if="state.selectedFilter.withThreshold"
-        class="f d-col j-center"
+        class="f d-col j-center mt-1"
       >
         <div class="f j-center ai-center">
           <span>
