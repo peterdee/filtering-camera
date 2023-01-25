@@ -1,7 +1,10 @@
 // reference: https://github.com/julyskies/brille
 package main
 
-import "syscall/js"
+import (
+	"math"
+	"syscall/js"
+)
 
 type Color struct {
 	R, G, B int
@@ -16,6 +19,35 @@ var COLORS = [8]Color{
 	{0, 255, 255},
 	{255, 255, 255},
 	{0, 0, 0},
+}
+
+var SOBEL_HORIZONTAL = [3][3]int{
+	{-1, 0, 1},
+	{-2, 0, 2},
+	{-1, 0, 1},
+}
+
+var SOBEL_VERTICAL = [3][3]int{
+	{1, 2, 1},
+	{0, 0, 0},
+	{-1, -2, -1},
+}
+
+func getCoordinates(pixel, width int) (int, int) {
+	x := pixel % width
+	y := math.Floor(float64(pixel) / float64(width))
+	return x, int(y)
+}
+
+func getGradientPoint(axisValue, shift, axisLength int) int {
+	if axisValue+shift >= axisLength {
+		return axisLength - axisValue - 1
+	}
+	return shift
+}
+
+func getPixel(x, y, width int) int {
+	return ((y * width) + x) * 4
 }
 
 func gray(r, g, b uint8) uint8 {
@@ -81,6 +113,73 @@ func eightColors() js.Func {
 	return eightColorsFunction
 }
 
+func grayscale() js.Func {
+	grayscaleFunction := js.FuncOf(func(this js.Value, arguments []js.Value) any {
+		if len(arguments) < 3 {
+			return "MISSING_ARGUMENTS"
+		}
+		pixelData := arguments[0]
+		grayscaleType := arguments[1].String()
+		result := arguments[2]
+		buffer := make([]uint8, pixelData.Get("byteLength").Int())
+		js.CopyBytesToGo(buffer, pixelData)
+		for i := 0; i < len(buffer); i += 4 {
+			if grayscaleType == "average" {
+				average := gray(buffer[i], buffer[i+1], buffer[i+2])
+				buffer[i] = average
+				buffer[i+1] = average
+				buffer[i+2] = average
+			} else {
+				average := uint8(
+					(float64(buffer[i])*0.21 + float64(buffer[i+1])*0.72 + float64(buffer[i+2])*0.07),
+				)
+				buffer[i] = average
+				buffer[i+1] = average
+				buffer[i+2] = average
+			}
+		}
+		return js.CopyBytesToJS(result, buffer)
+	})
+	return grayscaleFunction
+}
+
+func sobel() js.Func {
+	sobelFunction := js.FuncOf(func(this js.Value, arguments []js.Value) any {
+		if len(arguments) < 4 {
+			return "MISSING_ARGUMENTS"
+		}
+		pixelData := arguments[0]
+		width := arguments[1].Int()
+		height := arguments[2].Int()
+		result := arguments[3]
+		buffer := make([]uint8, pixelData.Get("byteLength").Int())
+		js.CopyBytesToGo(buffer, pixelData)
+		for i := 0; i < len(buffer); i += 4 {
+			x, y := getCoordinates(i/4, width)
+			gradientX := 0
+			gradientY := 0
+			for m := 0; m < 3; m += 1 {
+				for n := 0; n < 3; n += 1 {
+					k := getGradientPoint(x, m, width)
+					l := getGradientPoint(y, n, height)
+					pixel := getPixel(x+k, y+l, width)
+					average := gray(buffer[pixel], buffer[pixel+1], buffer[pixel+2])
+					gradientX += int(average) * SOBEL_HORIZONTAL[m][n]
+					gradientY += int(average) * SOBEL_VERTICAL[m][n]
+				}
+			}
+			colorCode := 255 - uint8(math.Sqrt(
+				float64((gradientX*gradientX)+(gradientY*gradientY)),
+			))
+			buffer[i] = colorCode
+			buffer[i+1] = colorCode
+			buffer[i+2] = colorCode
+		}
+		return js.CopyBytesToJS(result, buffer)
+	})
+	return sobelFunction
+}
+
 func solarize() js.Func {
 	solarizeFunction := js.FuncOf(func(this js.Value, arguments []js.Value) any {
 		if len(arguments) < 3 {
@@ -116,6 +215,8 @@ func solarize() js.Func {
 func main() {
 	js.Global().Set("binary", binary())
 	js.Global().Set("eightColors", eightColors())
+	js.Global().Set("grayscale", grayscale())
+	js.Global().Set("sobel", sobel())
 	js.Global().Set("solarize", solarize())
 	select {}
 }

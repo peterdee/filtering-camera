@@ -55,19 +55,27 @@ npm run serve
 
 ### Rebuild WASM
 
-Navigate to [/processing-wasm](/processing-wasm) directory
-
-```shell script
-cd ./processing-wasm
-```
-
 Use Go **v1.19**
 
 ```shell script
 gvm use go1.19
 ```
 
-Compile WASM binary
+Compile WASM binary using Node script
+
+```shell script
+npm run compile
+```
+
+Alternatively, compile WASM binary manually:
+
+1. Navigate to [/processing-wasm](/processing-wasm) directory
+
+```shell script
+cd ./processing-wasm
+```
+
+2. Compile WASM binary
 
 ```shell script
 GOOS=js GOARCH=wasm go build -o ../public/bin.wasm

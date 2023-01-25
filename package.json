@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "vue-tsc && vite build",
+    "compile": "node ./processing-wasm/compile.js",
     "dev": "vite --host",
     "preserve": "npm run build",
     "preview": "vite preview",

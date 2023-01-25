@@ -20,7 +20,12 @@ export default function bridge(
     (window as any).grayscale(data, grayscaleType, processed);
   }
   if (filter === 'sobel') {
-    (window as any).sobel(data, processed);
+    (window as any).sobel(
+      data,
+      imageData.width,
+      imageData.height,
+      processed,
+    );
   }
   if (filter === 'solarize') {
     const adjustedThreshold = clamp(threshold || 0, 0, 255);
