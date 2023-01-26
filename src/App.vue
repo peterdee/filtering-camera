@@ -13,6 +13,8 @@ import isMobile from './utilities/is-mobile';
 
 interface ComponentState {
   ctx: CanvasRenderingContext2D | null;
+  fpsCount: number;
+  frameTime: number[];
   processingType: ProcessingType;
   selectedFilter: FilterType;
   selectedGrayscaleType: GrayscaleType;
@@ -22,6 +24,8 @@ interface ComponentState {
 
 const state = reactive<ComponentState>({
   ctx: null,
+  fpsCount: 0,
+  frameTime: [],
   processingType: 'canvas',
   selectedFilter: FILTER_TYPES[0],
   selectedGrayscaleType: 'luminosity',
@@ -38,6 +42,12 @@ const draw = (video: HTMLVideoElement): null | void => {
   }
 
   ctx.drawImage(video, 0, 0);
+  state.frameTime.push(Date.now());
+  if (state.frameTime.length === 10) {
+    const diff = state.frameTime[9] - state.frameTime[0];
+    state.fpsCount = Math.round(1000 / (diff / 10));
+    state.frameTime = [];
+  }
 
   const imageData = ((): ImageData => {
     const frame = ctx.getImageData(0, 0,  window.innerWidth, window.innerHeight);
@@ -168,8 +178,12 @@ onMounted(async (): Promise<void> => {
 <template>
   <div class="f j-center ai-center wrap">
     <canvas ref="canvasRef" />
+    <div class="f fps">
+      {{ `FPS: ${state.fpsCount}` }}
+    </div>
     <div class="f d-col controls">
       <select
+        :disabled="!state.wasmLoaded"
         :value="state.processingType"
         @change="handleProcessingTypeSelection"
       >
@@ -247,6 +261,15 @@ canvas {
   position: absolute;
   top: var(--spacer);
   width: calc(var(--spacer) * 15);
+}
+.fps {
+  backdrop-filter: blur(var(--spacer-half));
+  border-radius: var(--spacer-half);
+  font-size: calc(var(--spacer) + var(--spacer-half));
+  padding: var(--spacer);
+  position: absolute;
+  right: var(--spacer);
+  top: var(--spacer);
 }
 .wrap {
   height: 100vh;
