@@ -44,6 +44,7 @@ const getPixel = (
 
 export default function sobel(imageData: ImageData): ImageData {
   const { data, height, width } = imageData;
+  const processed = new Uint8ClampedArray(data.length);
   for (let i = 0; i < data.length; i += 4) {
     const { x, y } = getCoordinates(i / 4, width);
     let gradientX = 0;
@@ -59,10 +60,11 @@ export default function sobel(imageData: ImageData): ImageData {
       }
     }
     const colorCode = 255 - Math.sqrt(gradientX ** 2 + gradientY ** 2);
-    data[i] = colorCode;
-    data[i + 1] = colorCode;
-    data[i + 2] = colorCode;
+    processed[i] = colorCode;
+    processed[i + 1] = colorCode;
+    processed[i + 2] = colorCode;
+    processed[i + 3] = data[i + 3];
   }
-  imageData.data.set(data);
+  imageData.data.set(processed);
   return imageData;
 }

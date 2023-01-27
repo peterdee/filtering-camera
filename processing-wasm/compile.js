@@ -1,7 +1,7 @@
 import { exec } from 'child_process';
 
 exec(
-  'cd processing-wasm && tinygo build -o ../public/bin.wasm -target wasm main.go',
+  'cd processing-wasm && GOOS=js GOARCH=wasm go build -o ../public/bin.wasm',
   (error, _, stderr) => {
     if (error) {
       throw error;
