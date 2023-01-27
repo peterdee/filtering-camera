@@ -7,14 +7,20 @@ import {
 
 import bridge from './bridge';
 import canvasFilters from './processing-canvas';
-import { FILTER_TYPES, type FilterType } from './constants';
-import type { GrayscaleType, ProcessingType } from './types/processing';
+import type {
+  FilterType,
+  GrayscaleType,
+  ProcessingType,
+} from './types';
+import { FILTER_TYPES } from './constants';
+import FPSCounterComponent from './components/FPSCounterComponent.vue';
 import isMobile from './utilities/is-mobile';
 
 interface ComponentState {
   ctx: CanvasRenderingContext2D | null;
   fpsCount: number;
   frameTime: number[];
+  isMobile: boolean;
   processingType: ProcessingType;
   selectedFilter: FilterType;
   selectedGrayscaleType: GrayscaleType;
@@ -26,6 +32,7 @@ const state = reactive<ComponentState>({
   ctx: null,
   fpsCount: 0,
   frameTime: [],
+  isMobile: true,
   processingType: 'canvas',
   selectedFilter: FILTER_TYPES[0],
   selectedGrayscaleType: 'luminosity',
@@ -45,7 +52,7 @@ const draw = (video: HTMLVideoElement): null | void => {
   state.frameTime.push(Date.now());
   if (state.frameTime.length === 10) {
     const diff = state.frameTime[9] - state.frameTime[0];
-    state.fpsCount = Math.round(1000 / (diff / 10));
+    state.fpsCount = Math.round(10000 / diff);
     state.frameTime = [];
   }
 
@@ -137,13 +144,24 @@ onMounted(async (): Promise<void> => {
     state.wasmLoaded = false;
   }
 
+  // check if this is a mobile device
+  const mobile = isMobile();
+  state.isMobile = mobile;
+
   const height = window.innerHeight;
   const width = window.innerWidth;
 
   if (canvasRef.value) {
     canvasRef.value.height = height;
     canvasRef.value.width = width;
-    state.ctx = canvasRef.value.getContext('2d', { willReadFrequently: true });
+    const ctx = canvasRef.value.getContext('2d', { willReadFrequently: true }) || null;
+    if (ctx) {
+      state.ctx = ctx;
+
+      // flip image horizontally
+      // ctx.translate(width, 0);
+      // ctx.scale(-1, 1);
+    }
   }
 
   // TODO: better image ratios for mobile devices
@@ -163,17 +181,17 @@ onMounted(async (): Promise<void> => {
       },
     },
   };
-  if (isMobile()) {
+  if (mobile) {
     (constraints.video as MediaTrackConstraints).facingMode = { exact: 'environment' };
     (constraints.video as MediaTrackConstraints).height = {
-      ideal: height,
+      // ideal: height,
       max: height,
-      min: height,
+      // min: height,
     };
     (constraints.video as MediaTrackConstraints).width = {
-      ideal: width,
+      // ideal: width,
       max: width,
-      min: width,
+      // min: width,
     };
   }
 
@@ -186,9 +204,10 @@ onMounted(async (): Promise<void> => {
 <template>
   <div class="f j-center ai-center wrap">
     <canvas ref="canvasRef" />
-    <div class="f fps">
-      {{ `FPS: ${state.fpsCount}` }}
-    </div>
+    <FPSCounterComponent
+      :count="state.fpsCount"
+      :is-mobile="state.isMobile"
+    />
     <div class="f d-col controls">
       <select
         :disabled="!state.wasmLoaded"
@@ -258,7 +277,7 @@ onMounted(async (): Promise<void> => {
 
 <style scoped>
 canvas {
-  max-height: 100vh;
+  max-height: calc(100vh - var(--spacer) * 2);
   max-width: 100vw;
 }
 .controls {
@@ -270,16 +289,7 @@ canvas {
   top: var(--spacer);
   width: calc(var(--spacer) * 15);
 }
-.fps {
-  backdrop-filter: blur(var(--spacer-half));
-  border-radius: var(--spacer-half);
-  font-size: calc(var(--spacer) + var(--spacer-half));
-  padding: var(--spacer);
-  position: absolute;
-  right: var(--spacer);
-  top: var(--spacer);
-}
 .wrap {
-  height: 100vh;
+  height: calc(100vh - var(--spacer) * 2);
 }
 </style>

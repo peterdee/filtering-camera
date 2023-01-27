@@ -1,7 +1,7 @@
 // reference: https://github.com/julyskies/brille/blob/release/processing/grayscale.go
 
 import clamp from '../utilities/clamp';
-import type { GrayscaleType } from '../types/processing';
+import type { GrayscaleType } from '../types';
 
 export default function grayscale(
   imageData: ImageData,

@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { exec } from 'node:child_process';
 
 exec(
   'cd processing-wasm && GOOS=js GOARCH=wasm go build -o ../public/bin.wasm',

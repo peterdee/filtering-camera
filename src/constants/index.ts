@@ -1,16 +1,4 @@
-import type { GrayscaleType } from '../types/processing';
-
-export interface FilterType {
-  defaultGrayscaleType?: GrayscaleType;
-  defaultThreshold?: number;
-  isGrayscale: boolean;
-  maxThreshold?: number;
-  minThreshold?: number;
-  name: string;
-  step?: number;
-  value: string;
-  withThreshold: boolean;
-}
+import type { FilterType } from '../types';
 
 export const FILTER_TYPES: FilterType[] = [
   {
@@ -53,3 +41,5 @@ export const FILTER_TYPES: FilterType[] = [
     withThreshold: true,
   },
 ];
+
+export const SPACER = 16;
