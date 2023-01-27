@@ -1,5 +1,7 @@
 ## filtering-camera
 
+Camera stream processing using Javascript and WebAssembley
+
 Engines: Node **v18**, Golang **v1.19**
 
 **DEV**: https://localhost:3000

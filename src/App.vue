@@ -5,9 +5,9 @@ import {
   ref,
 } from 'vue';
 
-import { FILTER_TYPES, type FilterType } from './constants';
 import bridge from './bridge';
 import canvasFilters from './processing-canvas';
+import { FILTER_TYPES, type FilterType } from './constants';
 import type { GrayscaleType, ProcessingType } from './types/processing';
 import isMobile from './utilities/is-mobile';
 
@@ -116,6 +116,14 @@ const handleThresholdInput = (event: Event): void => {
 }
 
 onMounted(async (): Promise<void> => {
+  // set correct favicon
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    const faviconLink = document.querySelector<HTMLLinkElement>(`link[rel~='icon']`);
+    if (faviconLink) {
+      faviconLink.href = 'favicon-light.png';
+    }
+  }
+
   // load WASM
   const go = new (window as any).Go();
   try {

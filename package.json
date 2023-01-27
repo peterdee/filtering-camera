@@ -1,6 +1,6 @@
 {
   "name": "filtering-camera",
-  "description": "Processing camera stream",
+  "description": "Camera stream processing using Javascript and WebAssembley",
   "private": true,
   "version": "1.0.0",
   "type": "module",
