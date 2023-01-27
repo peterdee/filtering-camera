@@ -27,7 +27,7 @@
   "license": "MIT",
   "dependencies": {
     "common-styles": "github:julyskies/common-styles",
-    "cors": "^2.8.5",
+    "compression": "^1.7.4",
     "express": "^4.18.2",
     "vue": "^3.2.45"
   },
