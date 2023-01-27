@@ -4,7 +4,7 @@ Engines: Node **v18**, Golang **v1.19**
 
 **DEV**: https://localhost:3000
 
-**PRODUCTION**: *TBD*
+**PRODUCTION**: https://camera.dyum.in (https://filtering-camera-wasm.vercel.app)
 
 ### Deploy
 
@@ -84,6 +84,10 @@ GOOS=js GOARCH=wasm go build -o ../public/bin.wasm
 ### Linting
 
 Using [ESLint](https://eslint.org)
+
+### Vercel deployment
+
+Application is automatically deployed to [Vercel](https://vercel.com) and is available at https://filtering-camera-wasm.vercel.app
 
 ### License
 

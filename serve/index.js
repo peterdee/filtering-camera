@@ -4,6 +4,7 @@ import express from 'express';
 import { readFileSync } from 'node:fs';
 
 const app = express();
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(cors());
 app.use(express.static(`${process.cwd()}/dist`));
@@ -17,6 +18,6 @@ createServer(
   },
   app,
 ).listen(
-  3000,
-  () => console.log('Serving static files on port 3000'),
+  PORT,
+  () => console.log(`Serving static files on port ${PORT}`),
 );

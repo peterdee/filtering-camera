@@ -7,7 +7,6 @@ export default function binary(
   threshold: number,
 ): ImageData {
   const { data } = imageData;
-  const processed = new Uint8ClampedArray(data.length);
   const adjustedThreshold = clamp(threshold, 0, 255);
   for (let i = 0; i < data.length; i += 4) {
     const average = Math.round((data[i] + data[i + 1] + data[i + 2]) / 3);
@@ -15,11 +14,10 @@ export default function binary(
     if (average > adjustedThreshold) {
       partial = 255;
     }
-    processed[i] = partial;
-    processed[i + 1] = partial;
-    processed[i + 2] = partial;
-    processed[i + 3] = data[i + 3];
+    data[i] = partial;
+    data[i + 1] = partial;
+    data[i + 2] = partial;
   }
-  imageData.data.set(processed);
+  imageData.data.set(data);
   return imageData;
 }

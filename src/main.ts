@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+
 // eslint-disable-next-line
 import 'common-styles/styles.css';
 
