@@ -16,6 +16,7 @@ import { FILTER_TYPES } from './constants';
 import FPSCounterComponent from './components/FPSCounterComponent.vue';
 import isMobile from './utilities/is-mobile';
 import OptionsModalComponent from './components/OptionsModalComponent.vue';
+import OptionsButtonComponent from './components/OptionsButtonComponent.vue';
 
 interface ComponentState {
   ctx: CanvasRenderingContext2D | null;
@@ -209,6 +210,11 @@ onMounted(async (): Promise<void> => {
       :count="state.fpsCount"
       :is-mobile="state.isMobile"
     />
+    <OptionsButtonComponent
+        v-if="!state.showOptionsModal"
+        :is-mobile="state.isMobile"
+        @handle-click="toggleOptionsModal"
+    />
     <OptionsModalComponent
       v-if="state.showOptionsModal"
       :processing-type="state.processingType"
@@ -222,18 +228,6 @@ onMounted(async (): Promise<void> => {
       @handle-threshold="handleThresholdInput"
       @toggle-modal="toggleOptionsModal"
     />
-    <div
-      v-if="!state.showOptionsModal"
-      class="f d-col controls"
-    >
-      <button
-        class="mt-half"
-        type="button"
-        @click="toggleOptionsModal"
-      >
-        Show menu
-      </button>
-    </div>
   </div>
 </template>
 
