@@ -26,9 +26,10 @@ defineProps<{
 
 <style scoped>
 .fps {
-  background-color: rgba(255, 255, 255, .9);
+  background-color: rgba(255, 255, 255, .7);
+  backdrop-filter: blur(var(--spacer-quarter));
   border-radius: var(--spacer-half);
-  color: var(--accent);
+  color: var(--accent-dark);
   font-size: calc(var(--spacer) + var(--spacer-quarter));
   font-weight: 500;
   padding: var(--spacer-half);

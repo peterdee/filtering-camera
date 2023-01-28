@@ -15,6 +15,7 @@ import type {
 import { FILTER_TYPES } from './constants';
 import FPSCounterComponent from './components/FPSCounterComponent.vue';
 import isMobile from './utilities/is-mobile';
+import OptionsModalComponent from './components/OptionsModalComponent.vue';
 
 interface ComponentState {
   ctx: CanvasRenderingContext2D | null;
@@ -25,6 +26,7 @@ interface ComponentState {
   selectedFilter: FilterType;
   selectedGrayscaleType: GrayscaleType;
   selectedThreshold: number;
+  showOptionsModal: boolean;
   wasmLoaded: boolean;
 }
 
@@ -37,6 +39,7 @@ const state = reactive<ComponentState>({
   selectedFilter: FILTER_TYPES[0],
   selectedGrayscaleType: 'luminosity',
   selectedThreshold: FILTER_TYPES[0].defaultThreshold || 0,
+  showOptionsModal: false,
   wasmLoaded: false,
 })
 
@@ -122,6 +125,10 @@ const handleThresholdInput = (event: Event): void => {
   state.selectedThreshold = Number(value);
 }
 
+const toggleOptionsModal = (): void => {
+  state.showOptionsModal = !state.showOptionsModal;
+}
+
 onMounted(async (): Promise<void> => {
   // set correct favicon
   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -205,8 +212,13 @@ onMounted(async (): Promise<void> => {
   <div class="f j-center ai-center wrap">
     <canvas ref="canvasRef" />
     <FPSCounterComponent
+      v-if="!state.showOptionsModal"
       :count="state.fpsCount"
       :is-mobile="state.isMobile"
+    />
+    <OptionsModalComponent
+      v-if="state.showOptionsModal"
+      @toggle-modal="toggleOptionsModal"
     />
     <div class="f d-col controls">
       <select
@@ -271,6 +283,13 @@ onMounted(async (): Promise<void> => {
           {{ state.selectedThreshold }}
         </span>
       </div>
+      <button
+        class="mt-half"
+        type="button"
+        @click="toggleOptionsModal"
+      >
+        Show menu
+      </button>
     </div>
   </div>
 </template>
