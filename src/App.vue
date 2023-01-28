@@ -102,32 +102,25 @@ const handleSuccess = (stream: MediaStream): null | void => {
   video.play();
 }
 
-const handleFilterSelection = (event: Event): void => {
-  const { value } = event.target as HTMLSelectElement;
-  const [filter] = FILTER_TYPES.filter(
-    (entry: FilterType): boolean => entry.value === value,
-  );
+const handleFilterSelection = (filter: FilterType): void => {
   state.selectedFilter = filter;
-}
+};
 
-const handleGrayscaleTypeSelection = (event: Event): void => {
-  const { value } = event.target as HTMLSelectElement;
-  state.selectedGrayscaleType = value as GrayscaleType;
-}
+const handleGrayscaleTypeSelection = (type: GrayscaleType): void => {
+  state.selectedGrayscaleType = type;
+};
 
-const handleProcessingTypeSelection = (event: Event): void => {
-  const { value } = event.target as HTMLSelectElement;
-  state.processingType = value as ProcessingType;
-}
+const handleProcessingTypeSelection = (type: ProcessingType): void => {
+  state.processingType = type;
+};
 
-const handleThresholdInput = (event: Event): void => {
-  const { value } = event.target as HTMLInputElement;
+const handleThresholdInput = (value: string): void => {
   state.selectedThreshold = Number(value);
-}
+};
 
 const toggleOptionsModal = (): void => {
   state.showOptionsModal = !state.showOptionsModal;
-}
+};
 
 onMounted(async (): Promise<void> => {
   // set correct favicon
@@ -218,71 +211,21 @@ onMounted(async (): Promise<void> => {
     />
     <OptionsModalComponent
       v-if="state.showOptionsModal"
+      :processing-type="state.processingType"
+      :selected-filter="state.selectedFilter"
+      :selected-grayscale-type="state.selectedGrayscaleType"
+      :selected-threshold="state.selectedThreshold"
+      :wasm-loaded="state.wasmLoaded"
+      @handle-filter="handleFilterSelection"
+      @handle-grayscale-type="handleGrayscaleTypeSelection"
+      @handle-processing-type="handleProcessingTypeSelection"
+      @handle-threshold="handleThresholdInput"
       @toggle-modal="toggleOptionsModal"
     />
-    <div class="f d-col controls">
-      <select
-        :disabled="!state.wasmLoaded"
-        :value="state.processingType"
-        @change="handleProcessingTypeSelection"
-      >
-        <option value="canvas">
-          Canvas
-        </option>
-        <option value="wasm">
-          WASM
-        </option>
-      </select>
-      <select
-        class="mt-1"
-        :value="state.selectedFilter.value"
-        @change="handleFilterSelection"
-      >
-        <option
-          v-for="filter in FILTER_TYPES"
-          :value="filter.value"
-        >
-          {{ filter.name }}
-        </option>
-      </select>
-      <select
-        v-if="state.selectedFilter.isGrayscale"
-        class="mt-1"
-        :value="state.selectedGrayscaleType"
-        @change="handleGrayscaleTypeSelection"
-      >
-        <option value="average">
-          Average
-        </option>
-        <option value="luminosity">
-          Luminosity
-        </option>
-      </select>
-      <div
-        v-if="state.selectedFilter.withThreshold"
-        class="f d-col j-center mt-1"
-      >
-        <div class="f j-center ai-center">
-          <span>
-            {{ state.selectedFilter.minThreshold || 0 }}
-          </span>
-          <input
-            class="mh-1"
-            type="range"
-            :max="state.selectedFilter.maxThreshold || 255"
-            :min="state.selectedFilter.minThreshold || 0"
-            :step="state.selectedFilter.step || 1"
-            :value="state.selectedThreshold"
-            @input="handleThresholdInput"
-          />
-          <span>
-            {{ state.selectedFilter.maxThreshold || 255 }}
-          </span>
-        </div>
-        <span class="t-center">
-          {{ state.selectedThreshold }}
-        </span>
-      </div>
+    <div
+      v-if="!state.showOptionsModal"
+      class="f d-col controls"
+    >
       <button
         class="mt-half"
         type="button"
