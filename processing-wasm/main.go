@@ -33,6 +33,16 @@ var SOBEL_VERTICAL = [3][3]int{
 	{-1, -2, -1},
 }
 
+func clamp[T float64 | int | uint](value T, max T, min T) T {
+	if value > max {
+		return max
+	}
+	if value < min {
+		return min
+	}
+	return value
+}
+
 func getCoordinates(pixel, width int) (int, int) {
 	x := pixel % width
 	y := math.Floor(float64(pixel) / float64(width))
@@ -168,8 +178,10 @@ func sobel() js.Func {
 					gradientY += int(average) * SOBEL_VERTICAL[m][n]
 				}
 			}
-			colorCode := 255 - uint8(math.Sqrt(
-				float64((gradientX*gradientX)+(gradientY*gradientY)),
+			colorCode := uint8(255 - clamp(
+				math.Sqrt(float64(gradientX*gradientX+gradientY*gradientY)),
+				255,
+				0,
 			))
 			buffer[i] = colorCode
 			buffer[i+1] = colorCode
