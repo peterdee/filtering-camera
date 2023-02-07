@@ -54,72 +54,81 @@ const handleThresholdInput = (event: Event): void => {
       @click="emit('toggle-modal')"
     />
     <div class="f d-col p-2 content">
-      <select
-        aria-label="Processing type"
-        :disabled="!wasmLoaded"
-        :value="processingType"
-        @change="handleProcessingTypeSelection"
-      >
-        <option value="canvas">
-          Canvas
-        </option>
-        <option value="wasm">
-          WASM
-        </option>
-      </select>
-      <select
-        aria-label="Available filters"
-        class="mt-1"
-        :value="selectedFilter.value"
-        @change="handleFilterSelection"
-      >
-        <option
-          v-for="filter in FILTER_TYPES"
-          :key="filter.value"
-          :value="filter.value"
+      <div class="f d-col mh-auto controls">
+        <select
+          aria-label="Processing type"
+          :disabled="!wasmLoaded"
+          :value="processingType"
+          @change="handleProcessingTypeSelection"
         >
-          {{ filter.name }}
-        </option>
-      </select>
-      <select
-        v-if="selectedFilter.isGrayscale"
-        aria-label="Grayscale type"
-        class="mt-1"
-        :value="selectedGrayscaleType"
-        @change="handleGrayscaleTypeSelection"
-      >
-        <option value="average">
-          Average
-        </option>
-        <option value="luminosity">
-          Luminosity
-        </option>
-      </select>
-      <div
-        v-if="selectedFilter.withThreshold"
-        class="f d-col j-center mt-1"
-      >
-        <div class="f j-center ai-center">
-          <span>
-            {{ selectedFilter.minThreshold || 0 }}
-          </span>
-          <input
-            aria-label="Threshold value"
-            class="mh-1"
-            type="range"
-            :max="selectedFilter.maxThreshold || 255"
-            :min="selectedFilter.minThreshold || 0"
-            :step="selectedFilter.step || 1"
-            :value="selectedThreshold"
-            @input="handleThresholdInput"
-          />
-          <span>
-            {{ selectedFilter.maxThreshold || 255 }}
+          <option value="canvas">
+            Canvas
+          </option>
+          <option value="wasm">
+            WASM
+          </option>
+        </select>
+        <select
+          aria-label="Available filters"
+          class="mt-1"
+          :value="selectedFilter.value"
+          @change="handleFilterSelection"
+        >
+          <option
+            v-for="filter in FILTER_TYPES"
+            :key="filter.value"
+            :value="filter.value"
+          >
+            {{ filter.name }}
+          </option>
+        </select>
+        <select
+          v-if="selectedFilter.isGrayscale"
+          aria-label="Grayscale type"
+          class="mt-1"
+          :value="selectedGrayscaleType"
+          @change="handleGrayscaleTypeSelection"
+        >
+          <option value="average">
+            Average
+          </option>
+          <option value="luminosity">
+            Luminosity
+          </option>
+        </select>
+        <div
+          v-if="selectedFilter.withThreshold"
+          class="f d-col j-center mt-1"
+        >
+          <div class="f j-center ai-center">
+            <span>
+              {{ selectedFilter.minThreshold || 0 }}
+            </span>
+            <input
+              aria-label="Threshold value"
+              class="mh-1"
+              type="range"
+              :max="selectedFilter.maxThreshold || 255"
+              :min="selectedFilter.minThreshold || 0"
+              :step="selectedFilter.step || 1"
+              :value="selectedThreshold"
+              @input="handleThresholdInput"
+            />
+            <span>
+              {{ selectedFilter.maxThreshold || 255 }}
+            </span>
+          </div>
+          <span class="t-center">
+            {{ selectedThreshold }}
           </span>
         </div>
-        <span class="t-center">
-          {{ selectedThreshold }}
-        </span>
+        <button
+          class="mt-1"
+          type="button"
+          @click="emit('toggle-modal')"
+        >
+          Close
+        </button>
       </div>
     </div>
   </div>
@@ -129,11 +138,16 @@ const handleThresholdInput = (event: Event): void => {
 .backdrop {
   background-color: transparent;
   cursor: default;
+  height: 50%;
   width: 100%;
 }
 .content {
-  background-color: var(--background);
+  background-color: rgba(255, 255, 255, .7);
   box-shadow: 0 0 2px 2px var(--text);
+  height: 50%;
+}
+.controls {
+  max-width: calc(var(--spacer) * 25);
 }
 .modal-background {
   position: fixed;

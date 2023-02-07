@@ -11,14 +11,14 @@ const emit = defineEmits(['handle-click']);
 <template>
   <button
     type="button"
-    :class="`options ${!isMobile ? 'mobile' : 'desktop'}`"
+    :class="`options ${isMobile ? 'mobile' : 'desktop'}`"
     @click="emit('handle-click')"
   >
     <ArrowIcon
-      v-if="!isMobile"
+      v-if="isMobile"
       :size="24"
     />
-    <span v-if="isMobile">
+    <span v-if="!isMobile">
       Options
     </span>
   </button>
