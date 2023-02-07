@@ -42,11 +42,11 @@ const state = reactive<ComponentState>({
   selectedThreshold: FILTER_TYPES[0].defaultThreshold || 0,
   showOptionsModal: false,
   wasmLoaded: false,
-})
+});
 
 const canvasRef = ref<HTMLCanvasElement>();
 
-const draw = (video: HTMLVideoElement): null | void => {
+const draw = (video: HTMLVideoElement): null | NodeJS.Timeout | void => {
   const { ctx } = state;
   if (!ctx) {
     return null;
@@ -61,7 +61,7 @@ const draw = (video: HTMLVideoElement): null | void => {
   }
 
   const imageData = ((): ImageData => {
-    const frame = ctx.getImageData(0, 0,  window.innerWidth, window.innerHeight);
+    const frame = ctx.getImageData(0, 0, window.innerWidth, window.innerHeight);
     if (state.processingType === 'canvas') {
       if (state.selectedFilter.value === 'binary') {
         return canvasFilters.binary(frame, state.selectedThreshold);
@@ -87,21 +87,21 @@ const draw = (video: HTMLVideoElement): null | void => {
 
   ctx.putImageData(imageData, 0, 0);
 
-  setTimeout(draw, 10, video);
-}
+  return setTimeout(draw, 10, video);
+};
 
 const handleError = (error: MediaStreamError): void => {
   console.log('media device error', error);
-}
+};
 
 const handleSuccess = (stream: MediaStream): null | void => {
   const video = document.createElement('video');
-  video.onplay = (): null | void => draw(video);
+  video.onplay = (): null | NodeJS.Timeout | void => draw(video);
   video.muted = true;
   video.playsInline = true;
   video.srcObject = stream;
   video.play();
-}
+};
 
 const handleFilterSelection = (filter: FilterType): void => {
   state.selectedFilter = filter;
@@ -126,7 +126,7 @@ const toggleOptionsModal = (): void => {
 onMounted(async (): Promise<void> => {
   // set correct favicon
   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    const faviconLink = document.querySelector<HTMLLinkElement>(`link[rel~='icon']`);
+    const faviconLink = document.querySelector<HTMLLinkElement>(`link[rel~='${'icon'}']`);
     if (faviconLink) {
       faviconLink.href = 'favicon-light.png';
     }
@@ -211,9 +211,9 @@ onMounted(async (): Promise<void> => {
       :is-mobile="state.isMobile"
     />
     <OptionsButtonComponent
-        v-if="!state.showOptionsModal"
-        :is-mobile="state.isMobile"
-        @handle-click="toggleOptionsModal"
+      v-if="!state.showOptionsModal"
+      :is-mobile="state.isMobile"
+      @handle-click="toggleOptionsModal"
     />
     <OptionsModalComponent
       v-if="state.showOptionsModal"

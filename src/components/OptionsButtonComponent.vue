@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ArrowIcon from './ArrowIcon.vue';
+
 defineProps<{
   isMobile: boolean;
 }>();
@@ -9,10 +11,16 @@ const emit = defineEmits(['handle-click']);
 <template>
   <button
     type="button"
-    :class="`${!isMobile ? 'mobile' : 'desktop'}`"
+    :class="`options ${!isMobile ? 'mobile' : 'desktop'}`"
     @click="emit('handle-click')"
   >
-    Options
+    <ArrowIcon
+      v-if="!isMobile"
+      :size="24"
+    />
+    <span v-if="isMobile">
+      Options
+    </span>
   </button>
 </template>
 
@@ -30,5 +38,8 @@ button {
   width: calc(var(--spacer) * 3);
   bottom: var(--spacer);
   left: calc(50% - (var(--spacer) + var(--spacer-half)));
+}
+.options {
+  padding: 0;
 }
 </style>
