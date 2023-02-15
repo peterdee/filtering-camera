@@ -55,8 +55,12 @@ const handleThresholdInput = (event: Event): void => {
     />
     <div class="f d-col p-2 content">
       <div class="f d-col mh-auto controls">
+        <span class="ns">
+          Processing type
+        </span>
         <select
           aria-label="Processing type"
+          class="mt-half"
           :disabled="!wasmLoaded"
           :value="processingType"
           @change="handleProcessingTypeSelection"
@@ -68,9 +72,12 @@ const handleThresholdInput = (event: Event): void => {
             WASM
           </option>
         </select>
+        <span class="mt-1 ns">
+          Available filters
+        </span>
         <select
           aria-label="Available filters"
-          class="mt-1"
+          class="mt-half"
           :value="selectedFilter.value"
           @change="handleFilterSelection"
         >
@@ -82,10 +89,16 @@ const handleThresholdInput = (event: Event): void => {
             {{ filter.name }}
           </option>
         </select>
+        <span
+          v-if="selectedFilter.isGrayscale"
+          class="mt-1 ns"
+        >
+          Grayscale type
+        </span>
         <select
           v-if="selectedFilter.isGrayscale"
           aria-label="Grayscale type"
-          class="mt-1"
+          class="mt-half"
           :value="selectedGrayscaleType"
           @change="handleGrayscaleTypeSelection"
         >
@@ -93,14 +106,17 @@ const handleThresholdInput = (event: Event): void => {
             Average
           </option>
           <option value="luminosity">
-            Luminosity
+            Luminance
           </option>
         </select>
         <div
           v-if="selectedFilter.withThreshold"
-          class="f d-col j-center mt-1"
+          class="f d-col j-center mt-1 ns"
         >
-          <div class="f j-center ai-center">
+          <span>
+            Filter threshold
+          </span>
+          <div class="f j-center ai-center mt-half">
             <span>
               {{ selectedFilter.minThreshold || 0 }}
             </span>
@@ -148,6 +164,7 @@ const handleThresholdInput = (event: Event): void => {
 }
 .controls {
   max-width: calc(var(--spacer) * 25);
+  width: 50%;
 }
 .modal-background {
   position: fixed;
