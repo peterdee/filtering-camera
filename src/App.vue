@@ -217,6 +217,7 @@ onMounted(async (): Promise<void> => {
     />
     <OptionsModalComponent
       v-if="state.showOptionsModal"
+      :is-mobile="state.isMobile"
       :processing-type="state.processingType"
       :selected-filter="state.selectedFilter"
       :selected-grayscale-type="state.selectedGrayscaleType"
@@ -246,6 +247,6 @@ canvas {
   width: calc(var(--spacer) * 15);
 }
 .wrap {
-  height: calc(100vh - var(--spacer) * 2);
+  height: 100%;
 }
 </style>
