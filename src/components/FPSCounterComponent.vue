@@ -11,8 +11,8 @@ defineProps<{
   <div
     class="f ns fps"
     :style="{
-      right: isMobile ? `${SPACER / 2}px` : `${SPACER}px`,
-      top: isMobile ? `${SPACER / 2}px` : `${SPACER}px`,
+      right: isMobile ? `${SPACER / 2}px` : `${SPACER * 2}px`,
+      top: isMobile ? `${SPACER / 2}px` : `${SPACER * 2}px`,
     }"
   >
     <div>

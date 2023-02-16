@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { reactive } from 'vue';
+
 import type {
   FilterType,
   GrayscaleType,
   ProcessingType,
 } from '../types';
 import { FILTER_TYPES } from '../constants';
+import StyledSelect from './StyledSelect.vue';
+import StyledRange from './StyledRange.vue';
 
 defineProps<{
   isMobile: boolean;
@@ -22,6 +26,19 @@ const emit = defineEmits([
   'handle-threshold',
   'toggle-modal',
 ]);
+
+interface ComponentState {
+  isClosing: boolean;
+}
+
+const state = reactive<ComponentState>({
+  isClosing: false,
+});
+
+const handleClose = (): void => {
+  state.isClosing = true;
+  setTimeout((): void => emit('toggle-modal'), 150);
+};
 
 const handleFilterSelection = (event: Event): void => {
   const { value } = event.target as HTMLSelectElement;
@@ -48,111 +65,113 @@ const handleThresholdInput = (event: Event): void => {
 </script>
 
 <template>
-  <div class="f d-col j-center fade-in modal-background">
+  <div
+    :class="`f d-col j-space-between fade-in modal-background ${state.isClosing
+      ? 'fade-out'
+      : ''}`"
+  >
+    <div class="empty" />
     <div
-      :class="`f d-col mh-auto controls ${isMobile ? 'controls-mobile' : ''}`"
+      :class="`f d-col mh-auto j-space-between controls ${isMobile
+        ? 'controls-mobile'
+        : ''}`"
     >
-      <h2 :class="`ns t-center title ${isMobile ? 'title-mobile' : ''}`">
-        Camera: image processing in real time
-      </h2>
-      <span class="mt-2 ns">
-        Processing type
-      </span>
-      <select
-        aria-label="Processing type"
-        class="mt-half"
-        :disabled="!wasmLoaded"
-        :value="processingType"
-        @change="handleProcessingTypeSelection"
-      >
-        <option value="canvas">
-          Canvas
-        </option>
-        <option value="wasm">
-          WASM
-        </option>
-      </select>
-      <span class="mt-1 ns">
-        Available filters
-      </span>
-      <select
-        aria-label="Available filters"
-        class="mt-half"
-        :value="selectedFilter.value"
-        @change="handleFilterSelection"
-      >
-        <option
-          v-for="filter in FILTER_TYPES"
-          :key="filter.value"
-          :value="filter.value"
+      <div class="f d-col">
+        <h2 :class="`ns t-center title ${isMobile ? 'title-mobile' : ''}`">
+          Camera: image processing in real time
+        </h2>
+        <span class="mt-2 ns">
+          Processing type
+        </span>
+        <StyledSelect
+          ariaLabel="Processing type"
+          globalClasses="mt-half"
+          :disabled="!wasmLoaded"
+          :value="(processingType as string)"
+          @handle-change="handleProcessingTypeSelection"
         >
-          {{ filter.name }}
-        </option>
-      </select>
-      <span
-        v-if="selectedFilter.isGrayscale"
-        class="mt-1 ns"
-      >
-        Grayscale type
-      </span>
-      <select
-        v-if="selectedFilter.isGrayscale"
-        aria-label="Grayscale type"
-        class="mt-half"
-        :value="selectedGrayscaleType"
-        @change="handleGrayscaleTypeSelection"
-      >
-        <option value="average">
-          Average
-        </option>
-        <option value="luminosity">
-          Luminance
-        </option>
-      </select>
-      <div
-        v-if="selectedFilter.withThreshold"
-        class="f d-col j-center mt-1 ns"
-      >
-        <span>
-          Filter threshold
+          <option value="canvas">
+            Canvas
+          </option>
+          <option value="wasm">
+            WASM
+          </option>
+        </StyledSelect>
+        <span class="mt-1 ns">
+          Available filters
         </span>
-        <div class="f j-center ai-center mt-half">
-          <span>
-            {{ selectedFilter.minThreshold || 0 }}
-          </span>
-          <input
-            aria-label="Threshold value"
-            class="mh-1"
-            type="range"
-            :max="selectedFilter.maxThreshold || 255"
-            :min="selectedFilter.minThreshold || 0"
-            :step="selectedFilter.step || 1"
-            :value="selectedThreshold"
-            @input="handleThresholdInput"
-          />
-          <span>
-            {{ selectedFilter.maxThreshold || 255 }}
-          </span>
-        </div>
-        <span class="t-center">
-          {{ selectedThreshold }}
+        <StyledSelect
+          ariaLabel="Available filters"
+          globalClasses="mt-half"
+          :value="selectedFilter.value"
+          @handle-change="handleFilterSelection"
+        >
+          <option
+            v-for="filter in FILTER_TYPES"
+            :key="filter.value"
+            :value="filter.value"
+          >
+            {{ filter.name }}
+          </option>
+        </StyledSelect>
+        <span
+          v-if="selectedFilter.isGrayscale"
+          class="mt-1 ns"
+        >
+          Grayscale type
         </span>
+        <StyledSelect
+          v-if="selectedFilter.isGrayscale"
+          ariaLabel="Grayscale type"
+          globalClasses="mt-half"
+          :value="selectedGrayscaleType"
+          @handle-change="handleGrayscaleTypeSelection"
+        >
+          <option value="average">
+            Average
+          </option>
+          <option value="luminosity">
+            Luminance
+          </option>
+        </StyledSelect>
+        <StyledRange
+          v-if="selectedFilter.withThreshold"
+          global-classes="mt-1"
+          :selected-filter="selectedFilter"
+          :threshold-value="selectedThreshold"
+          @handle-input="handleThresholdInput"
+        />
       </div>
       <button
         class="mt-1"
         type="button"
-        @click="emit('toggle-modal')"
+        @click="handleClose"
       >
         Close
       </button>
-      <div class="f j-center mt-2">
-        <span class="footer ns mr-1">
-          {{ `© ${new Date().getFullYear()}` }}
-        </span>
-        <span class="footer ns">
-          <a hre="https://github.com/peterdee">Peter Dyumin</a>
-        </span>
-      </div>
+    </div>
+    <div class="f j-center mt-2 footer">
+      <span class="ns mr-1 footer-text">
+        {{ `© ${new Date().getFullYear()}` }}
+      </span>
+      <span class="ns mr-1 footer-text">
+        <a
+          href="https://github.com/peterdee/filtering-camera"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Camera image processing
+        </a>
+      </span>
+      <span class="ns footer-text">
+        <a
+          href="https://github.com/peterdee"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Peter Dyumin
+        </a>
+      </span>
     </div>
   </div>
 </template>
@@ -160,6 +179,7 @@ const handleThresholdInput = (event: Event): void => {
 <style scoped>
 .controls {
   max-width: calc(var(--spacer) * 25);
+  min-height: calc(var(--spacer) * 22);
   min-width: calc(var(--spacer) * 15);
   width: 50%;
 }
@@ -167,7 +187,14 @@ const handleThresholdInput = (event: Event): void => {
   max-width: 90%;
   width: 90%;
 }
+.empty {
+  background-color: transparent;
+  height: 1px;
+}
 .footer {
+  height: calc(var(--spacer) * 2);
+}
+.footer-text {
   font-size: calc(var(--spacer) - var(--spacer-quarter));
 }
 .modal-background {
