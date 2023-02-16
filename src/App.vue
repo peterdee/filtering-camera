@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  onBeforeUnmount,
   onMounted,
   reactive,
   ref,
@@ -13,10 +14,10 @@ import type {
   ProcessingType,
 } from './types';
 import { FILTER_TYPES } from './constants';
-import FPSCounterComponent from './components/FPSCounterComponent.vue';
+import FPSCounter from './components/FPSCounterComponent.vue';
 import isMobile from './utilities/is-mobile';
-import OptionsModalComponent from './components/OptionsModalComponent.vue';
-import OptionsButtonComponent from './components/OptionsButtonComponent.vue';
+import OptionsModal from './components/OptionsModalComponent.vue';
+import OptionsButton from './components/OptionsButtonComponent.vue';
 
 interface ComponentState {
   ctx: CanvasRenderingContext2D | null;
@@ -95,6 +96,7 @@ const handleError = (error: MediaStreamError): void => {
 };
 
 const handleSuccess = (stream: MediaStream): null | void => {
+  console.log(stream.getVideoTracks()[0].getSettings(), stream);
   const video = document.createElement('video');
   video.onplay = (): null | NodeJS.Timeout | void => draw(video);
   video.muted = true;
@@ -115,6 +117,13 @@ const handleProcessingTypeSelection = (type: ProcessingType): void => {
   state.processingType = type;
 };
 
+const handleResize = (): void => {
+  if (canvasRef.value) {
+    canvasRef.value.height = window.innerHeight;
+    canvasRef.value.width = window.innerWidth;
+  }
+};
+
 const handleThresholdInput = (value: string): void => {
   state.selectedThreshold = Number(value);
 };
@@ -122,6 +131,10 @@ const handleThresholdInput = (value: string): void => {
 const toggleOptionsModal = (): void => {
   state.showOptionsModal = !state.showOptionsModal;
 };
+
+onBeforeUnmount((): void => {
+  window.removeEventListener('resize', handleResize);
+});
 
 onMounted(async (): Promise<void> => {
   // set correct favicon
@@ -148,6 +161,8 @@ onMounted(async (): Promise<void> => {
   // check if this is a mobile device
   const mobile = isMobile();
   state.isMobile = mobile;
+
+  window.addEventListener('resize', handleResize);
 
   const height = window.innerHeight;
   const width = window.innerWidth;
@@ -205,17 +220,17 @@ onMounted(async (): Promise<void> => {
 <template>
   <div class="f j-center ai-center wrap">
     <canvas ref="canvasRef" />
-    <FPSCounterComponent
+    <FPSCounter
       v-if="!state.showOptionsModal"
       :count="state.fpsCount"
       :is-mobile="state.isMobile"
     />
-    <OptionsButtonComponent
+    <OptionsButton
       v-if="!state.showOptionsModal"
       :is-mobile="state.isMobile"
       @handle-click="toggleOptionsModal"
     />
-    <OptionsModalComponent
+    <OptionsModal
       v-if="state.showOptionsModal"
       :is-mobile="state.isMobile"
       :processing-type="state.processingType"
@@ -234,17 +249,8 @@ onMounted(async (): Promise<void> => {
 
 <style scoped>
 canvas {
-  max-height: calc(100vh - var(--spacer) * 2);
-  max-width: 100vw;
-}
-.controls {
-  backdrop-filter: blur(var(--spacer-half));
-  border-radius: var(--spacer-half);
-  left: var(--spacer);
-  padding: var(--spacer);
-  position: absolute;
-  top: var(--spacer);
-  width: calc(var(--spacer) * 15);
+  height: 100%;
+  width: 100%;
 }
 .wrap {
   height: 100%;

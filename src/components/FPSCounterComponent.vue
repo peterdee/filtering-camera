@@ -9,7 +9,7 @@ defineProps<{
 
 <template>
   <div
-    class="f ns fps"
+    class="f fade-in ns fps"
     :style="{
       right: isMobile ? `${SPACER / 2}px` : `${SPACER * 2}px`,
       top: isMobile ? `${SPACER / 2}px` : `${SPACER * 2}px`,
