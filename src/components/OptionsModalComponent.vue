@@ -7,6 +7,7 @@ import type {
   ProcessingType,
 } from '../types';
 import { FILTER_TYPES } from '../constants';
+import ModalWrap from './ModalWrapComponent.vue';
 import StyledSelect from './StyledSelect.vue';
 import StyledRange from './StyledRange.vue';
 
@@ -65,12 +66,7 @@ const handleThresholdInput = (event: Event): void => {
 </script>
 
 <template>
-  <div
-    :class="`f d-col j-space-between fade-in modal-background ${state.isClosing
-      ? 'fade-out'
-      : ''}`"
-  >
-    <div class="empty" />
+  <ModalWrap :is-closing="state.isClosing">
     <div
       :class="`f d-col mh-auto j-space-between controls ${isMobile
         ? 'controls-mobile'
@@ -150,30 +146,7 @@ const handleThresholdInput = (event: Event): void => {
         Close
       </button>
     </div>
-    <div class="f j-center mt-2 footer">
-      <span class="ns mr-1 footer-text">
-        {{ `© ${new Date().getFullYear()}` }}
-      </span>
-      <span class="ns mr-1 footer-text">
-        <a
-          href="https://github.com/peterdee/filtering-camera"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          Camera image processing
-        </a>
-      </span>
-      <span class="ns footer-text">
-        <a
-          href="https://github.com/peterdee"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          Peter Dyumin
-        </a>
-      </span>
-    </div>
-  </div>
+  </ModalWrap>
 </template>
 
 <style scoped>
@@ -186,24 +159,6 @@ const handleThresholdInput = (event: Event): void => {
 .controls-mobile {
   max-width: 90%;
   width: 90%;
-}
-.empty {
-  background-color: transparent;
-  height: 1px;
-}
-.footer {
-  height: calc(var(--spacer) * 2);
-}
-.footer-text {
-  font-size: calc(var(--spacer) - var(--spacer-quarter));
-}
-.modal-background {
-  background-color: rgba(255, 255, 255, .9);
-  height: 100%;
-  left: 0;
-  position: fixed;
-  top: 0;
-  width: 100%;
 }
 .title {
   font-size: calc(var(--spacer) + var(--spacer-half));

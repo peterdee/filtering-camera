@@ -8,6 +8,7 @@ import {
 
 import bridge from './bridge';
 import canvasFilters from './processing-canvas';
+import ErrorModal from './components/ErrorModalComponent.vue';
 import type {
   FilterType,
   GrayscaleType,
@@ -28,6 +29,7 @@ interface ComponentState {
   selectedFilter: FilterType;
   selectedGrayscaleType: GrayscaleType;
   selectedThreshold: number;
+  showErrorModal: boolean;
   showOptionsModal: boolean;
   wasmLoaded: boolean;
 }
@@ -39,8 +41,9 @@ const state = reactive<ComponentState>({
   isMobile: true,
   processingType: 'canvas',
   selectedFilter: FILTER_TYPES[0],
-  selectedGrayscaleType: 'luminosity',
+  selectedGrayscaleType: 'average',
   selectedThreshold: FILTER_TYPES[0].defaultThreshold || 0,
+  showErrorModal: false,
   showOptionsModal: false,
   wasmLoaded: false,
 });
@@ -91,8 +94,8 @@ const draw = (video: HTMLVideoElement): null | NodeJS.Timeout | void => {
   return setTimeout(draw, 10, video);
 };
 
-const handleError = (error: MediaStreamError): void => {
-  console.log('media device error', error);
+const handleError = (): void => {
+  state.showErrorModal = true;
 };
 
 const handleSuccess = (stream: MediaStream): null | void => {
@@ -215,13 +218,17 @@ onMounted(async (): Promise<void> => {
 <template>
   <div class="f j-center ai-center wrap">
     <canvas ref="canvasRef" />
+    <ErrorModal
+      v-if="state.showErrorModal"
+      :is-mobile="state.isMobile"
+    />
     <FPSCounter
       v-if="!state.showOptionsModal"
       :count="state.fpsCount"
       :is-mobile="state.isMobile"
     />
     <OptionsButton
-      v-if="!state.showOptionsModal"
+      v-if="!state.showErrorModal && !state.showOptionsModal"
       :is-mobile="state.isMobile"
       @handle-click="toggleOptionsModal"
     />
