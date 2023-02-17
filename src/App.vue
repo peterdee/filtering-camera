@@ -96,7 +96,17 @@ const handleError = (error: MediaStreamError): void => {
 };
 
 const handleSuccess = (stream: MediaStream): null | void => {
-  console.log(stream.getVideoTracks()[0].getSettings(), stream);
+  // adjust video track resolution for mobile devices
+  if (state.isMobile) {
+    const [videoTrack = null] = stream.getVideoTracks();
+    if (videoTrack) {
+      videoTrack.applyConstraints({
+        height: window.innerWidth,
+        width: window.innerHeight,
+      });
+    }
+  }
+
   const video = document.createElement('video');
   video.onplay = (): null | NodeJS.Timeout | void => draw(video);
   video.muted = true;
@@ -162,6 +172,7 @@ onMounted(async (): Promise<void> => {
   const mobile = isMobile();
   state.isMobile = mobile;
 
+  // handle window resizing
   window.addEventListener('resize', handleResize);
 
   const height = window.innerHeight;
@@ -173,14 +184,8 @@ onMounted(async (): Promise<void> => {
     const ctx = canvasRef.value.getContext('2d', { willReadFrequently: true }) || null;
     if (ctx) {
       state.ctx = ctx;
-
-      // flip image horizontally
-      // ctx.translate(width, 0);
-      // ctx.scale(-1, 1);
     }
   }
-
-  // TODO: better image ratios for mobile devices
 
   const constraints: MediaStreamConstraints = {
     audio: false,
@@ -199,16 +204,6 @@ onMounted(async (): Promise<void> => {
   };
   if (mobile) {
     (constraints.video as MediaTrackConstraints).facingMode = { exact: 'environment' };
-    (constraints.video as MediaTrackConstraints).height = {
-      // ideal: height,
-      max: height,
-      // min: height,
-    };
-    (constraints.video as MediaTrackConstraints).width = {
-      // ideal: width,
-      max: width,
-      // min: width,
-    };
   }
 
   navigator.mediaDevices.getUserMedia(constraints)
