@@ -1,4 +1,3 @@
-// reference: https://github.com/julyskies/brille
 package main
 
 import (
@@ -19,6 +18,12 @@ var COLORS = [8]Color{
 	{0, 255, 255},
 	{255, 255, 255},
 	{0, 0, 0},
+}
+
+var LAPLACIAN = [3][3]int{
+	{-1, -1, -1},
+	{-1, 8, -1},
+	{-1, -1, -1},
 }
 
 var SOBEL_HORIZONTAL = [3][3]int{
@@ -44,9 +49,7 @@ func clamp[T float64 | int | uint](value T, max T, min T) T {
 }
 
 func getCoordinates(pixel, width int) (int, int) {
-	x := pixel % width
-	y := math.Floor(float64(pixel) / float64(width))
-	return x, int(y)
+	return pixel % width, int(math.Floor(float64(pixel) / float64(width)))
 }
 
 func getGradientPoint(axisValue, shift, axisLength int) int {
@@ -61,8 +64,7 @@ func getPixel(x, y, width int) int {
 }
 
 func gray(r, g, b uint8) uint8 {
-	average := (int(r) + int(g) + int(b)) / 3
-	return uint8(average)
+	return uint8((int(r) + int(g) + int(b)) / 3)
 }
 
 func binary() js.Func {
@@ -77,17 +79,34 @@ func binary() js.Func {
 		js.CopyBytesToGo(buffer, pixelData)
 		for i := 0; i < len(buffer); i += 4 {
 			average := gray(buffer[i], buffer[i+1], buffer[i+2])
-			var colorCode uint8 = 255
+			var channel uint8 = 255
 			if uint8(average) < uint8(threshold) {
-				colorCode = 0
+				channel = 0
 			}
-			buffer[i] = colorCode
-			buffer[i+1] = colorCode
-			buffer[i+2] = colorCode
+			buffer[i], buffer[i+1], buffer[i+2] = channel, channel, channel
 		}
 		return js.CopyBytesToJS(result, buffer)
 	})
 	return binaryFunction
+}
+
+func colorInversion() js.Func {
+	colorInversionFunction := js.FuncOf(func(this js.Value, arguments []js.Value) any {
+		if len(arguments) < 2 {
+			return "MISSING_ARGUMENTS"
+		}
+		pixelData := arguments[0]
+		result := arguments[1]
+		buffer := make([]uint8, pixelData.Get("byteLength").Int())
+		js.CopyBytesToGo(buffer, pixelData)
+		for i := 0; i < len(buffer); i += 4 {
+			buffer[i] = 255 - buffer[i]
+			buffer[i+1] = 255 - buffer[i+1]
+			buffer[i+2] = 255 - buffer[i+2]
+		}
+		return js.CopyBytesToJS(result, buffer)
+	})
+	return colorInversionFunction
 }
 
 func eightColors() js.Func {
@@ -134,23 +153,50 @@ func grayscale() js.Func {
 		buffer := make([]uint8, pixelData.Get("byteLength").Int())
 		js.CopyBytesToGo(buffer, pixelData)
 		for i := 0; i < len(buffer); i += 4 {
+			var average uint8
 			if grayscaleType == "average" {
-				average := gray(buffer[i], buffer[i+1], buffer[i+2])
-				buffer[i] = average
-				buffer[i+1] = average
-				buffer[i+2] = average
+				average = gray(buffer[i], buffer[i+1], buffer[i+2])
 			} else {
-				average := uint8(
+				average = uint8(
 					(float64(buffer[i])*0.21 + float64(buffer[i+1])*0.72 + float64(buffer[i+2])*0.07),
 				)
-				buffer[i] = average
-				buffer[i+1] = average
-				buffer[i+2] = average
 			}
+			buffer[i], buffer[i+1], buffer[i+2] = average, average, average
 		}
 		return js.CopyBytesToJS(result, buffer)
 	})
 	return grayscaleFunction
+}
+
+func laplacian() js.Func {
+	laplacianFunction := js.FuncOf(func(this js.Value, arguments []js.Value) any {
+		if len(arguments) < 4 {
+			return "MISSING_ARGUMENTS"
+		}
+		pixelData := arguments[0]
+		width := arguments[1].Int()
+		height := arguments[2].Int()
+		result := arguments[3]
+		buffer := make([]uint8, pixelData.Get("byteLength").Int())
+		js.CopyBytesToGo(buffer, pixelData)
+		for i := 0; i < len(buffer); i += 4 {
+			averageSum := 0
+			x, y := getCoordinates(i/4, width)
+			for m := 0; m < 3; m += 1 {
+				for n := 0; n < 3; n += 1 {
+					k := getGradientPoint(x, m, width)
+					l := getGradientPoint(y, n, height)
+					pixel := getPixel(x+k, y+l, width)
+					average := gray(buffer[pixel], buffer[pixel+1], buffer[pixel+2])
+					averageSum += int(average) * LAPLACIAN[m][n]
+				}
+			}
+			channel := 255 - uint8(clamp(averageSum, 255, 0))
+			buffer[i], buffer[i+1], buffer[i+2] = channel, channel, channel
+		}
+		return js.CopyBytesToJS(result, buffer)
+	})
+	return laplacianFunction
 }
 
 func sobel() js.Func {
@@ -178,14 +224,12 @@ func sobel() js.Func {
 					gradientY += int(average) * SOBEL_VERTICAL[m][n]
 				}
 			}
-			colorCode := uint8(255 - clamp(
+			channel := uint8(255 - clamp(
 				math.Sqrt(float64(gradientX*gradientX+gradientY*gradientY)),
 				255,
 				0,
 			))
-			buffer[i] = colorCode
-			buffer[i+1] = colorCode
-			buffer[i+2] = colorCode
+			buffer[i], buffer[i+1], buffer[i+2] = channel, channel, channel
 		}
 		return js.CopyBytesToJS(result, buffer)
 	})
@@ -215,9 +259,7 @@ func solarize() js.Func {
 			if b <= uint8(threshold) {
 				b = 255 - b
 			}
-			buffer[i] = r
-			buffer[i+1] = g
-			buffer[i+2] = b
+			buffer[i], buffer[i+1], buffer[i+2] = r, g, b
 		}
 		return js.CopyBytesToJS(result, buffer)
 	})
@@ -226,8 +268,10 @@ func solarize() js.Func {
 
 func main() {
 	js.Global().Set("binary", binary())
+	js.Global().Set("colorInversion", colorInversion())
 	js.Global().Set("eightColors", eightColors())
 	js.Global().Set("grayscale", grayscale())
+	js.Global().Set("laplacian", laplacian())
 	js.Global().Set("sobel", sobel())
 	js.Global().Set("solarize", solarize())
 	select {}

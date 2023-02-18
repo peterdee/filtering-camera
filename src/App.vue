@@ -225,7 +225,7 @@ onMounted(async (): Promise<void> => {
       :is-mobile="state.isMobile"
     />
     <FPSCounter
-      v-if="!state.showOptionsModal"
+      v-if="!state.showErrorModal && !state.showOptionsModal"
       :count="state.fpsCount"
       :is-mobile="state.isMobile"
     />
