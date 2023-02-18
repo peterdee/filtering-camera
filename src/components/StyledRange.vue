@@ -47,6 +47,7 @@ defineProps<{
 }
 input[type=range] {
   appearance: none;
+  background-color: transparent;
   width: calc(100% - var(--spacer) * 5);
   -webkit-appearance: none;
 }

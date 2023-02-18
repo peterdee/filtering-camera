@@ -56,7 +56,8 @@ const draw = (video: HTMLVideoElement): null | NodeJS.Timeout | void => {
     return null;
   }
 
-  ctx.drawImage(video, 0, 0);
+  // TODO: stretch but use proper aspect ratio
+  ctx.drawImage(video, 0, 0/* , window.innerWidth, window.innerHeight */);
   state.frameTime.push(Date.now());
   if (state.frameTime.length === 10) {
     const diff = state.frameTime[9] - state.frameTime[0];
@@ -65,6 +66,7 @@ const draw = (video: HTMLVideoElement): null | NodeJS.Timeout | void => {
   }
 
   const imageData = ((): ImageData => {
+    // TODO: frame boundaries
     const frame = ctx.getImageData(0, 0, window.innerWidth, window.innerHeight);
     if (state.processingType === 'canvas') {
       if (state.selectedFilter.value === 'binary') {
