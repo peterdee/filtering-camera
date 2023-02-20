@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-  onBeforeUnmount,
   onMounted,
   reactive,
   ref,
@@ -22,6 +21,7 @@ import OptionsButton from './components/OptionsButtonComponent.vue';
 
 interface ComponentState {
   ctx: CanvasRenderingContext2D | null;
+  flipImage: boolean;
   fpsCount: number;
   frameTime: number[];
   isMobile: boolean;
@@ -36,6 +36,7 @@ interface ComponentState {
 
 const state = reactive<ComponentState>({
   ctx: null,
+  flipImage: false,
   fpsCount: 0,
   frameTime: [],
   isMobile: true,
@@ -56,8 +57,7 @@ const draw = (video: HTMLVideoElement): null | NodeJS.Timeout | void => {
     return null;
   }
 
-  // TODO: stretch but use proper aspect ratio
-  ctx.drawImage(video, 0, 0/* , window.innerWidth, window.innerHeight */);
+  ctx.drawImage(video, 0, 0);
   state.frameTime.push(Date.now());
   if (state.frameTime.length === 10) {
     const diff = state.frameTime[9] - state.frameTime[0];
@@ -65,9 +65,15 @@ const draw = (video: HTMLVideoElement): null | NodeJS.Timeout | void => {
     state.frameTime = [];
   }
 
+  let canvasHeight = window.innerHeight;
+  let canvasWidth = window.innerWidth;
+  if (canvasRef.value) {
+    canvasHeight = canvasRef.value.height;
+    canvasWidth = canvasRef.value.width;
+  }
+
   const imageData = ((): ImageData => {
-    // TODO: frame boundaries
-    const frame = ctx.getImageData(0, 0, window.innerWidth, window.innerHeight);
+    const frame = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
     if (state.processingType === 'canvas') {
       if (state.selectedFilter.value === 'binary') {
         return canvasFilters.binary(frame, state.selectedThreshold);
@@ -107,22 +113,52 @@ const handleError = (): void => {
 };
 
 const handleSuccess = (stream: MediaStream): null | void => {
+  // check if video track is available
+  const [videoTrack = null] = stream.getVideoTracks();
+  if (!videoTrack) {
+    state.showErrorModal = true;
+    return null;
+  }
+
+  const windowHeight = window.innerHeight;
+  const windowWidth = window.innerWidth;
+  let canvasHeight = windowHeight;
+  let canvasWidth = windowWidth;
+
+  // get video resolution
+  const capabilities = videoTrack.getCapabilities();
+  if (capabilities.height && capabilities.height.max) {
+    canvasHeight = capabilities.height.max > windowHeight
+      ? windowHeight
+      : capabilities.height.max;
+  }
+  if (capabilities.width && capabilities.width.max) {
+    canvasWidth = capabilities.width.max > windowWidth
+      ? windowWidth
+      : capabilities.width.max;
+  }
+
+  // set canvas size
+  if (canvasRef.value) {
+    canvasRef.value.height = canvasHeight;
+    canvasRef.value.width = canvasWidth;
+  }
+
   // adjust video track resolution for mobile devices
   if (state.isMobile) {
-    const [videoTrack = null] = stream.getVideoTracks();
-    if (videoTrack) {
-      videoTrack.applyConstraints({
-        height: window.innerWidth,
-        width: window.innerHeight,
-      });
-    }
+    videoTrack.applyConstraints({
+      height: canvasWidth,
+      width: canvasHeight,
+    });
   }
+
   const video = document.createElement('video');
   video.onplay = (): null | NodeJS.Timeout | void => draw(video);
   video.muted = true;
   video.playsInline = true;
   video.srcObject = stream;
   video.play();
+  return null;
 };
 
 const handleFilterSelection = (filter: FilterType): void => {
@@ -137,24 +173,17 @@ const handleProcessingTypeSelection = (type: ProcessingType): void => {
   state.processingType = type;
 };
 
-const handleResize = (): void => {
-  if (canvasRef.value) {
-    canvasRef.value.height = window.innerHeight;
-    canvasRef.value.width = window.innerWidth;
-  }
-};
-
 const handleThresholdInput = (value: string): void => {
   state.selectedThreshold = Number(value);
+};
+
+const toggleFlipImage = (): void => {
+  state.flipImage = !state.flipImage;
 };
 
 const toggleOptionsModal = (): void => {
   state.showOptionsModal = !state.showOptionsModal;
 };
-
-onBeforeUnmount((): void => {
-  window.removeEventListener('resize', handleResize);
-});
 
 onMounted(async (): Promise<void> => {
   // set correct favicon
@@ -182,33 +211,32 @@ onMounted(async (): Promise<void> => {
   const mobile = isMobile();
   state.isMobile = mobile;
 
-  // handle window resizing
-  window.addEventListener('resize', handleResize);
-
-  const height = window.innerHeight;
-  const width = window.innerWidth;
+  if (!mobile) {
+    state.flipImage = true;
+  }
 
   if (canvasRef.value) {
-    canvasRef.value.height = height;
-    canvasRef.value.width = width;
     const ctx = canvasRef.value.getContext('2d', { willReadFrequently: true }) || null;
     if (ctx) {
       state.ctx = ctx;
     }
   }
 
+  const windowHeight = window.innerHeight;
+  const windowWidth = window.innerWidth;
+
   const constraints: MediaStreamConstraints = {
     audio: false,
     video: {
       height: {
-        ideal: 720,
-        max: 720,
-        min: 600,
+        ideal: windowHeight,
+        max: windowHeight,
+        min: 1,
       },
       width: {
-        ideal: 1280,
-        max: 1280,
-        min: 800,
+        ideal: windowWidth,
+        max: windowWidth,
+        min: 1,
       },
     },
   };
@@ -223,8 +251,15 @@ onMounted(async (): Promise<void> => {
 </script>
 
 <template>
-  <div class="f j-center ai-center wrap">
-    <canvas ref="canvasRef" />
+  <div
+    :class="`f j-center ai-center wrap ${state.isMobile
+      ? 'wrap-mobile'
+      : ''}`"
+  >
+    <canvas
+      ref="canvasRef"
+      :class="`${state.flipImage ? 'flip' : ''}`"
+    />
     <ErrorModal
       v-if="state.showErrorModal"
       :is-mobile="state.isMobile"
@@ -241,6 +276,7 @@ onMounted(async (): Promise<void> => {
     />
     <OptionsModal
       v-if="state.showOptionsModal"
+      :flip-image="state.flipImage"
       :is-mobile="state.isMobile"
       :processing-type="state.processingType"
       :selected-filter="state.selectedFilter"
@@ -251,17 +287,23 @@ onMounted(async (): Promise<void> => {
       @handle-grayscale-type="handleGrayscaleTypeSelection"
       @handle-processing-type="handleProcessingTypeSelection"
       @handle-threshold="handleThresholdInput"
+      @toggle-flip="toggleFlipImage"
       @toggle-modal="toggleOptionsModal"
     />
   </div>
 </template>
 
 <style scoped>
-canvas {
-  height: 100%;
-  width: 100%;
+.flip {
+  -moz-transform: scale(-1, 1);
+  -o-transform: scale(-1, 1);
+  -webkit-transform: scale(-1, 1);
+  transform: scale(-1, 1);
 }
 .wrap {
+  height: 100vh;
+}
+.wrap-mobile {
   height: 100%;
 }
 </style>

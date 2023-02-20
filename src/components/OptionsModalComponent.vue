@@ -12,6 +12,7 @@ import StyledSelect from './StyledSelect.vue';
 import StyledRange from './StyledRange.vue';
 
 defineProps<{
+  flipImage: boolean;
   isMobile: boolean;
   processingType: ProcessingType;
   selectedFilter: FilterType;
@@ -25,6 +26,7 @@ const emit = defineEmits([
   'handle-grayscale-type',
   'handle-processing-type',
   'handle-threshold',
+  'toggle-flip',
   'toggle-modal',
 ]);
 
@@ -76,7 +78,22 @@ const handleThresholdInput = (event: Event): void => {
         <h2 :class="`ns t-center title ${isMobile ? 'title-mobile' : ''}`">
           Camera: image processing in real time
         </h2>
-        <span class="mt-2 ns">
+        <div class="f mt-2 ns">
+          <input
+            class="checkbox"
+            id="switch"
+            type="checkbox"
+            :checked="flipImage"
+            @input="emit('toggle-flip')"
+          />
+          <label
+            class="ml-half"
+            for="switch"
+          >
+            Flip image
+          </label>
+        </div>
+        <span class="mt-1 ns">
           Processing type
         </span>
         <StyledSelect
@@ -150,6 +167,9 @@ const handleThresholdInput = (event: Event): void => {
 </template>
 
 <style scoped>
+.checkbox {
+  background-color: transparent;
+}
 .controls {
   max-width: calc(var(--spacer) * 25);
   min-height: calc(var(--spacer) * 22);
