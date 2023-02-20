@@ -1,4 +1,4 @@
-export type GrayscaleType = 'average' | 'luminosity';
+export type GrayscaleType = 'average' | 'luminance';
 
 export interface FilterType {
   defaultGrayscaleType?: GrayscaleType;

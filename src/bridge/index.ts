@@ -5,19 +5,33 @@ export default function bridge(
   imageData: ImageData,
   filter: string,
   threshold: number = 0,
-  grayscaleType: GrayscaleType = 'luminosity',
+  grayscaleType: GrayscaleType = 'luminance',
 ): ImageData {
   const { data } = imageData;
-  const processed = new Uint8ClampedArray(data.length);
+  const processed = data; // new Uint8ClampedArray(data.length);
   if (filter === 'binary') {
     const adjustedThreshold = clamp(threshold || 0, 0, 255);
     (window as any).binary(data, adjustedThreshold, processed);
+  }
+  if (filter === 'colorInversion') {
+    (window as any).colorInversion(
+      data,
+      processed,
+    );
   }
   if (filter === 'eightColors') {
     (window as any).eightColors(data, processed);
   }
   if (filter === 'grayscale') {
     (window as any).grayscale(data, grayscaleType, processed);
+  }
+  if (filter === 'laplacian') {
+    (window as any).laplacian(
+      data,
+      imageData.width,
+      imageData.height,
+      processed,
+    );
   }
   if (filter === 'sobel') {
     (window as any).sobel(

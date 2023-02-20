@@ -72,11 +72,17 @@ const draw = (video: HTMLVideoElement): null | NodeJS.Timeout | void => {
       if (state.selectedFilter.value === 'binary') {
         return canvasFilters.binary(frame, state.selectedThreshold);
       }
+      if (state.selectedFilter.value === 'colorInversion') {
+        return canvasFilters.colorInversion(frame);
+      }
       if (state.selectedFilter.value === 'eightColors') {
         return canvasFilters.eightColors(frame);
       }
       if (state.selectedFilter.value === 'grayscale') {
         return canvasFilters.grayscale(frame, state.selectedGrayscaleType);
+      }
+      if (state.selectedFilter.value === 'laplacian') {
+        return canvasFilters.laplacian(frame);
       }
       if (state.selectedFilter.value === 'sobel') {
         return canvasFilters.sobel(frame);
@@ -111,7 +117,6 @@ const handleSuccess = (stream: MediaStream): null | void => {
       });
     }
   }
-
   const video = document.createElement('video');
   video.onplay = (): null | NodeJS.Timeout | void => draw(video);
   video.muted = true;

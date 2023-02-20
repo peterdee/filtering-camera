@@ -126,7 +126,7 @@ const handleThresholdInput = (event: Event): void => {
           <option value="average">
             Average
           </option>
-          <option value="luminosity">
+          <option value="luminance">
             Luminance
           </option>
         </StyledSelect>

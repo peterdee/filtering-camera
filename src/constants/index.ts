@@ -13,15 +13,27 @@ export const FILTER_TYPES: FilterType[] = [
   },
   {
     isGrayscale: false,
+    name: 'Color inversion',
+    value: 'colorInversion',
+    withThreshold: false,
+  },
+  {
+    isGrayscale: false,
     name: 'Eight colors',
     value: 'eightColors',
     withThreshold: false,
   },
   {
-    defaultGrayscaleType: 'luminosity',
+    defaultGrayscaleType: 'luminance',
     isGrayscale: true,
     name: 'Grayscale',
     value: 'grayscale',
+    withThreshold: false,
+  },
+  {
+    isGrayscale: false,
+    name: 'Laplacian filter',
+    value: 'laplacian',
     withThreshold: false,
   },
   {
@@ -31,7 +43,7 @@ export const FILTER_TYPES: FilterType[] = [
     withThreshold: false,
   },
   {
-    defaultThreshold: 105,
+    defaultThreshold: 122,
     isGrayscale: false,
     maxThreshold: 255,
     minThreshold: 0,
