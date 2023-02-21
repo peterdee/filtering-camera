@@ -2,7 +2,7 @@ import type { FilterType } from '../types';
 
 export const FILTER_TYPES: FilterType[] = [
   {
-    defaultThreshold: 122,
+    defaultThreshold: 127,
     isGrayscale: false,
     maxThreshold: 255,
     minThreshold: 0,
@@ -43,7 +43,7 @@ export const FILTER_TYPES: FilterType[] = [
     withThreshold: false,
   },
   {
-    defaultThreshold: 122,
+    defaultThreshold: 127,
     isGrayscale: false,
     maxThreshold: 255,
     minThreshold: 0,

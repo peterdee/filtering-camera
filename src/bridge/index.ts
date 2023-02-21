@@ -8,29 +8,24 @@ export default function bridge(
   grayscaleType: GrayscaleType = 'luminance',
 ): ImageData {
   const { data } = imageData;
-  const processed = data; // new Uint8ClampedArray(data.length);
   if (filter === 'binary') {
     const adjustedThreshold = clamp(threshold || 0, 0, 255);
-    (window as any).binary(data, adjustedThreshold, processed);
+    (window as any).binary(data, adjustedThreshold);
   }
   if (filter === 'colorInversion') {
-    (window as any).colorInversion(
-      data,
-      processed,
-    );
+    (window as any).colorInversion(data);
   }
   if (filter === 'eightColors') {
-    (window as any).eightColors(data, processed);
+    (window as any).eightColors(data);
   }
   if (filter === 'grayscale') {
-    (window as any).grayscale(data, grayscaleType, processed);
+    (window as any).grayscale(data, grayscaleType);
   }
   if (filter === 'laplacian') {
     (window as any).laplacian(
       data,
       imageData.width,
       imageData.height,
-      processed,
     );
   }
   if (filter === 'sobel') {
@@ -38,13 +33,11 @@ export default function bridge(
       data,
       imageData.width,
       imageData.height,
-      processed,
     );
   }
   if (filter === 'solarize') {
     const adjustedThreshold = clamp(threshold || 0, 0, 255);
-    (window as any).solarize(data, adjustedThreshold, processed);
+    (window as any).solarize(data, adjustedThreshold);
   }
-  imageData.data.set(processed);
   return imageData;
 }

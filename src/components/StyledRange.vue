@@ -12,7 +12,7 @@ defineProps<{
 
 <template>
   <div :class="`f d-col ${globalClasses || ''}`">
-    <span>
+    <span class="ns">
       Filter threshold
     </span>
     <div class="f j-space-between mt-half ai-center">

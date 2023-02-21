@@ -69,12 +69,11 @@ func gray(r, g, b uint8) uint8 {
 
 func binary() js.Func {
 	binaryFunction := js.FuncOf(func(this js.Value, arguments []js.Value) any {
-		if len(arguments) < 3 {
+		if len(arguments) < 2 {
 			return "MISSING_ARGUMENTS"
 		}
 		pixelData := arguments[0]
 		threshold := arguments[1].Int()
-		result := arguments[2]
 		buffer := make([]uint8, pixelData.Get("byteLength").Int())
 		js.CopyBytesToGo(buffer, pixelData)
 		for i := 0; i < len(buffer); i += 4 {
@@ -85,18 +84,17 @@ func binary() js.Func {
 			}
 			buffer[i], buffer[i+1], buffer[i+2] = channel, channel, channel
 		}
-		return js.CopyBytesToJS(result, buffer)
+		return js.CopyBytesToJS(pixelData, buffer)
 	})
 	return binaryFunction
 }
 
 func colorInversion() js.Func {
 	colorInversionFunction := js.FuncOf(func(this js.Value, arguments []js.Value) any {
-		if len(arguments) < 2 {
+		if len(arguments) < 1 {
 			return "MISSING_ARGUMENTS"
 		}
 		pixelData := arguments[0]
-		result := arguments[1]
 		buffer := make([]uint8, pixelData.Get("byteLength").Int())
 		js.CopyBytesToGo(buffer, pixelData)
 		for i := 0; i < len(buffer); i += 4 {
@@ -104,18 +102,17 @@ func colorInversion() js.Func {
 			buffer[i+1] = 255 - buffer[i+1]
 			buffer[i+2] = 255 - buffer[i+2]
 		}
-		return js.CopyBytesToJS(result, buffer)
+		return js.CopyBytesToJS(pixelData, buffer)
 	})
 	return colorInversionFunction
 }
 
 func eightColors() js.Func {
 	eightColorsFunction := js.FuncOf(func(this js.Value, arguments []js.Value) any {
-		if len(arguments) < 2 {
+		if len(arguments) < 1 {
 			return "MISSING_ARGUMENTS"
 		}
 		pixelData := arguments[0]
-		result := arguments[1]
 		buffer := make([]uint8, pixelData.Get("byteLength").Int())
 		js.CopyBytesToGo(buffer, pixelData)
 		for i := 0; i < len(buffer); i += 4 {
@@ -137,19 +134,18 @@ func eightColors() js.Func {
 			buffer[i+1] = uint8(selectedColor.G)
 			buffer[i+2] = uint8(selectedColor.B)
 		}
-		return js.CopyBytesToJS(result, buffer)
+		return js.CopyBytesToJS(pixelData, buffer)
 	})
 	return eightColorsFunction
 }
 
 func grayscale() js.Func {
 	grayscaleFunction := js.FuncOf(func(this js.Value, arguments []js.Value) any {
-		if len(arguments) < 3 {
+		if len(arguments) < 2 {
 			return "MISSING_ARGUMENTS"
 		}
 		pixelData := arguments[0]
 		grayscaleType := arguments[1].String()
-		result := arguments[2]
 		buffer := make([]uint8, pixelData.Get("byteLength").Int())
 		js.CopyBytesToGo(buffer, pixelData)
 		for i := 0; i < len(buffer); i += 4 {
@@ -163,20 +159,19 @@ func grayscale() js.Func {
 			}
 			buffer[i], buffer[i+1], buffer[i+2] = average, average, average
 		}
-		return js.CopyBytesToJS(result, buffer)
+		return js.CopyBytesToJS(pixelData, buffer)
 	})
 	return grayscaleFunction
 }
 
 func laplacian() js.Func {
 	laplacianFunction := js.FuncOf(func(this js.Value, arguments []js.Value) any {
-		if len(arguments) < 4 {
+		if len(arguments) < 3 {
 			return "MISSING_ARGUMENTS"
 		}
 		pixelData := arguments[0]
 		width := arguments[1].Int()
 		height := arguments[2].Int()
-		result := arguments[3]
 		buffer := make([]uint8, pixelData.Get("byteLength").Int())
 		js.CopyBytesToGo(buffer, pixelData)
 		for i := 0; i < len(buffer); i += 4 {
@@ -194,20 +189,19 @@ func laplacian() js.Func {
 			channel := 255 - uint8(clamp(averageSum, 255, 0))
 			buffer[i], buffer[i+1], buffer[i+2] = channel, channel, channel
 		}
-		return js.CopyBytesToJS(result, buffer)
+		return js.CopyBytesToJS(pixelData, buffer)
 	})
 	return laplacianFunction
 }
 
 func sobel() js.Func {
 	sobelFunction := js.FuncOf(func(this js.Value, arguments []js.Value) any {
-		if len(arguments) < 4 {
+		if len(arguments) < 3 {
 			return "MISSING_ARGUMENTS"
 		}
 		pixelData := arguments[0]
 		width := arguments[1].Int()
 		height := arguments[2].Int()
-		result := arguments[3]
 		buffer := make([]uint8, pixelData.Get("byteLength").Int())
 		js.CopyBytesToGo(buffer, pixelData)
 		for i := 0; i < len(buffer); i += 4 {
@@ -231,19 +225,18 @@ func sobel() js.Func {
 			))
 			buffer[i], buffer[i+1], buffer[i+2] = channel, channel, channel
 		}
-		return js.CopyBytesToJS(result, buffer)
+		return js.CopyBytesToJS(pixelData, buffer)
 	})
 	return sobelFunction
 }
 
 func solarize() js.Func {
 	solarizeFunction := js.FuncOf(func(this js.Value, arguments []js.Value) any {
-		if len(arguments) < 3 {
+		if len(arguments) < 2 {
 			return "MISSING_ARGUMENTS"
 		}
 		pixelData := arguments[0]
 		threshold := arguments[1].Int()
-		result := arguments[2]
 		buffer := make([]uint8, pixelData.Get("byteLength").Int())
 		js.CopyBytesToGo(buffer, pixelData)
 		for i := 0; i < len(buffer); i += 4 {
@@ -261,7 +254,7 @@ func solarize() js.Func {
 			}
 			buffer[i], buffer[i+1], buffer[i+2] = r, g, b
 		}
-		return js.CopyBytesToJS(result, buffer)
+		return js.CopyBytesToJS(pixelData, buffer)
 	})
 	return solarizeFunction
 }
