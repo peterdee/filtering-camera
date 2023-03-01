@@ -2,6 +2,8 @@ package main
 
 import (
 	"math"
+	"runtime"
+	"sync"
 	"syscall/js"
 )
 
@@ -48,6 +50,13 @@ func clamp[T float64 | int | uint](value T, max T, min T) T {
 	return value
 }
 
+func clampMax[T float64 | int | uint](value T, max T) T {
+	if value > max {
+		return max
+	}
+	return value
+}
+
 func getCoordinates(pixel, width int) (int, int) {
 	return pixel % width, int(math.Floor(float64(pixel) / float64(width)))
 }
@@ -61,6 +70,15 @@ func getGradientPoint(axisValue, shift, axisLength int) int {
 
 func getPixel(x, y, width int) int {
 	return ((y * width) + x) * 4
+}
+
+func getPixPerThread(pixLen, threads int) int {
+	pixPerThreadRaw := float64(pixLen) / float64(threads)
+	module := math.Mod(pixPerThreadRaw, 4.0)
+	if module == 0 {
+		return int(pixPerThreadRaw)
+	}
+	return int(pixPerThreadRaw + (float64(threads) - math.Mod(pixPerThreadRaw, 4.0)))
 }
 
 func gray(r, g, b uint8) uint8 {
@@ -202,30 +220,55 @@ func sobel() js.Func {
 		pixelData := arguments[0]
 		width := arguments[1].Int()
 		height := arguments[2].Int()
-		buffer := make([]uint8, pixelData.Get("byteLength").Int())
+
+		pixLen := pixelData.Get("byteLength").Int()
+		buffer := make([]uint8, pixLen)
+		result := make([]uint8, pixLen)
 		js.CopyBytesToGo(buffer, pixelData)
-		for i := 0; i < len(buffer); i += 4 {
-			x, y := getCoordinates(i/4, width)
-			gradientX := 0
-			gradientY := 0
-			for m := 0; m < 3; m += 1 {
-				for n := 0; n < 3; n += 1 {
-					k := getGradientPoint(x, m, width)
-					l := getGradientPoint(y, n, height)
-					pixel := getPixel(x+k, y+l, width)
-					average := gray(buffer[pixel], buffer[pixel+1], buffer[pixel+2])
-					gradientX += int(average) * SOBEL_HORIZONTAL[m][n]
-					gradientY += int(average) * SOBEL_VERTICAL[m][n]
+
+		threads := runtime.NumCPU()
+		pixPerThread := getPixPerThread(pixLen, threads)
+
+		var wg sync.WaitGroup
+
+		processing := func(thread int) {
+			defer wg.Done()
+			startIndex := pixPerThread * thread
+			endIndex := clampMax(startIndex+pixPerThread, pixLen)
+			for i := startIndex; i < endIndex; i += 4 {
+				x, y := getCoordinates(i/4, width)
+				gradientX, gradientY := 0, 0
+				for m := 0; m < 3; m += 1 {
+					for n := 0; n < 3; n += 1 {
+						px := getPixel(
+							clamp(x-(3/2-m), width-1, 0),
+							clamp(y-(3/2-n), height-1, 0),
+							width,
+						)
+						average := gray(buffer[px], buffer[px+1], buffer[px+2])
+						gradientX += int(average) * SOBEL_HORIZONTAL[m][n]
+						gradientY += int(average) * SOBEL_VERTICAL[m][n]
+					}
 				}
+				channel := uint8(
+					255 - clamp(
+						math.Sqrt(float64(gradientX*gradientX+gradientY*gradientY)),
+						255,
+						0,
+					),
+				)
+				result[i], result[i+1], result[i+2], result[i+3] = channel, channel, channel, buffer[i+3]
 			}
-			channel := uint8(255 - clamp(
-				math.Sqrt(float64(gradientX*gradientX+gradientY*gradientY)),
-				255,
-				0,
-			))
-			buffer[i], buffer[i+1], buffer[i+2] = channel, channel, channel
 		}
-		return js.CopyBytesToJS(pixelData, buffer)
+
+		for t := 0; t < threads; t += 1 {
+			wg.Add(1)
+			go processing(t)
+		}
+
+		wg.Wait()
+
+		return js.CopyBytesToJS(pixelData, result)
 	})
 	return sobelFunction
 }
