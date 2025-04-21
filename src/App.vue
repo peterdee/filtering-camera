@@ -194,6 +194,12 @@ onMounted(async (): Promise<void> => {
     }
   }
 
+  const wakeLock = () => {
+    requestWakeLock();
+    document.removeEventListener('click', wakeLock);
+  };
+  document.addEventListener('click', wakeLock, { once: true });
+
   // load WASM
   const go = new (window as any).Go();
   try {

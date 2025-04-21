@@ -39,19 +39,19 @@ Copy generated `cert.pem` and `key.pem` to [/serve](/serve) directory
 
 ### Launch
 
-Run locally
+- Run locally
 
 ```shell script
 npm run dev
 ```
 
-Build application
+- Build application
 
 ```shell script
 npm run build
 ```
 
-Serve static files
+- Serve static files
 
 ```shell script
 npm run serve
