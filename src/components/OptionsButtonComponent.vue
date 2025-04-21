@@ -11,7 +11,7 @@ const emit = defineEmits(['handle-click']);
 <template>
   <button
     type="button"
-    :class="`fade-in options ${isMobile ? 'mobile' : 'desktop'}`"
+    :class="`button fade-in options ${isMobile ? 'mobile' : 'desktop'}`"
     @click="emit('handle-click')"
   >
     <ArrowIcon :size="24" />

@@ -2,7 +2,7 @@
   "name": "filtering-camera",
   "description": "Camera stream processing using Javascript and WebAssembley",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "author": {
     "name": "Peter Dyumin",
@@ -10,15 +10,15 @@
   },
   "scripts": {
     "build": "vue-tsc && vite build",
-    "compile": "node ./processing-wasm/compile.js",
+    "compile-wasm": "node ./processing-wasm/compile.js",
     "dev": "ENV=local vite --host",
     "preserve": "npm run build",
     "preview": "vite preview",
     "serve": "node ./serve/index.js"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
   },
   "repository": {
     "type": "git",
@@ -27,18 +27,18 @@
   "license": "MIT",
   "dependencies": {
     "common-styles": "github:julyskies/common-styles",
-    "compression": "^1.7.4",
-    "express": "^4.18.2",
-    "vue": "^3.2.45"
+    "compression": "^1.8.0",
+    "express": "^4.21.2",
+    "vue": "^3.5.13"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",
-    "@types/express": "^4.17.15",
-    "@types/webrtc": "^0.0.33",
-    "@vitejs/plugin-vue": "^4.0.0",
+    "@types/express": "^4.17.21",
+    "@types/webrtc": "^0.0.46",
+    "@vitejs/plugin-vue": "^5.2.3",
     "@vue/eslint-config-airbnb-with-typescript": "^7.0.0",
-    "typescript": "^4.9.3",
-    "vite": "^4.0.0",
-    "vue-tsc": "^1.0.11"
+    "typescript": "^5.8.3",
+    "vite": "^6.3.2",
+    "vue-tsc": "^2.2.8"
   }
 }

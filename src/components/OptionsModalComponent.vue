@@ -158,7 +158,7 @@ const handleThresholdInput = (event: Event): void => {
         />
       </div>
       <button
-        class="mt-1"
+        class="button mt-1"
         type="button"
         @click="handleClose"
       >

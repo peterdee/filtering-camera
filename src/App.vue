@@ -18,6 +18,7 @@ import FPSCounter from './components/FPSCounterComponent.vue';
 import isMobile from './utilities/is-mobile';
 import OptionsModal from './components/OptionsModalComponent.vue';
 import OptionsButton from './components/OptionsButtonComponent.vue';
+import requestWakeLock from './utilities/wakelock';
 
 interface ComponentState {
   ctx: CanvasRenderingContext2D | null;
@@ -190,9 +191,15 @@ onMounted(async (): Promise<void> => {
   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     const faviconLink = document.querySelector<HTMLLinkElement>(`link[rel~='${'icon'}']`);
     if (faviconLink) {
-      faviconLink.href = 'favicon-light.png';
+      faviconLink.href = 'favicon-light.svg';
     }
   }
+
+  const wakeLock = () => {
+    requestWakeLock();
+    document.removeEventListener('click', wakeLock);
+  };
+  document.addEventListener('click', wakeLock, { once: true });
 
   // load WASM
   const go = new (window as any).Go();
