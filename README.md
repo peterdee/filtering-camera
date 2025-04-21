@@ -2,18 +2,19 @@
 
 Camera stream processing using Javascript and WebAssembley
 
-Engines: Node **v18**, Golang **v1.19**
+Engines: Node **v22**, Golang **v1.24**
 
 **DEV**: https://localhost:3000
 
-**PRODUCTION**: https://camera.dyum.in (https://filtering-camera-wasm.vercel.app)
+**PRODUCTION**: https://camera.dyum.in / https://filtering-camera-wasm.vercel.app
 
 ### Deploy
 
+Clone the repository and install necessary dependencies
+
 ```shell script
-git clone https://github.com/peterdee/filtering-camera
 cd ./filtering-camera
-nvm use 18
+nvm use 22
 npm ci
 ```
 
@@ -21,16 +22,17 @@ npm ci
 
 HTTPS is required for camera access on mobile devices
 
-Install `mkcert`
+Generate necessary files using OpenSSL
 
 ```shell script
-brew install mkcert
-```
+# Generate key file
+openssl genrsa -out key.pem 2048
 
-Generate certificate for `localhost`
+# Generate CSR
+openssl req -new -sha256 -key key.pem -out csr.csr
 
-```shell script
-mkcert -key-file key.pem -cert-file cert.pem example.com *.example.com localhost
+# Generate certificate
+openssl req -x509 -sha256 -days 365 -key key.pem -in csr.csr -out cert.pem
 ```
 
 Copy generated `cert.pem` and `key.pem` to [/serve](/serve) directory
@@ -55,53 +57,41 @@ Serve static files
 npm run serve
 ```
 
-### Rebuild WASM
+### Compile WASM binary
 
-Use Go **v1.19**
+- Use Go **v1.24**
 
 ```shell script
-gvm use go1.19
+gvm use go1.24
 ```
 
-Compile WASM binary using Node script
+- Compile WASM binary using Node script
 
 ```shell script
-npm run compile
+npm run compile-wasm
 ```
 
 Alternatively, compile WASM binary manually:
 
-1. Navigate to [/processing-wasm](/processing-wasm) directory
+- Navigate to [/processing-wasm](/processing-wasm) directory
 
 ```shell script
 cd ./processing-wasm
 ```
 
-2. Compile WASM binary
+- Compile WASM binary
 
 ```shell script
 GOOS=js GOARCH=wasm go build -o ../public/bin.wasm
 ```
 
-Binary can be compiled using [TinyGo](https://tinygo.org), but it causes WASM module to crash randomly on iOS devices
-
-Install TinyGo (MacOS): https://tinygo.org/getting-started/install/macos
-
-Compile the binary using TinyGo
-
-```shell script
-tinygo build -o ../public/bin.wasm -target wasm main.go
-```
-
-You would need to replace [/public/wasm_exec.js](/public/wasm_exec.js) file with a proper one if WASM binary was compiled with TinyGo
-
 ### Linting
 
 Using [ESLint](https://eslint.org)
 
-### Vercel deployment
+### Cloud deployment
 
-Application is automatically deployed to [Vercel](https://vercel.com) and is available at https://filtering-camera-wasm.vercel.app
+Application is automatically deployed to [Vercel](https://vercel.com) and is available at https://camera.dyum.in / https://filtering-camera-wasm.vercel.app
 
 ### License
 

@@ -2,7 +2,7 @@
   "name": "filtering-camera",
   "description": "Camera stream processing using Javascript and WebAssembley",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "author": {
     "name": "Peter Dyumin",
@@ -10,15 +10,15 @@
   },
   "scripts": {
     "build": "vue-tsc && vite build",
-    "compile": "node ./processing-wasm/compile.js",
+    "compile-wasm": "node ./processing-wasm/compile.js",
     "dev": "ENV=local vite --host",
     "preserve": "npm run build",
     "preview": "vite preview",
     "serve": "node ./serve/index.js"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
   },
   "repository": {
     "type": "git",
